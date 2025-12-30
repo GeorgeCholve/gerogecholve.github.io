@@ -531,10 +531,7 @@ button:hover {
         </div>
     </div>
 
-    <!DOCTYPE html>
-
-<body> </body>
-<script>
+    <script>
 /*##《数据目录》(乱序)
 => 常量定义（所有常量对象）
     typeEffectiveness, itemEffects, statusEffects, weatherEffects, terrainEffects
@@ -1169,98 +1166,113 @@ function parseItems(line) {
 
 // 解析宝可梦信息
 // 兼容新旧格式的读取函数
-function parsePokemonData(data) {
-    const pokemons = [];
-    const lines = data.split('\n');
-    let currentPokemon = null;
+function parsePokemon(lines, startIndex) {
+    const pokemon = {
+        name: "",
+        types: [],
+        level: 0,
+        stats: { hp: 0, atk: 0, def: 0, spAtk: 0, spDef: 0, speed: 0 },
+        ability: "",
+        item: { name: "无", effect: null },
+        maxHP: 0,
+        currentHP: 0,
+        moves: [],
+        status: "none",
+        additionalStatus: "none",
+        gender: "无",
+        endIndex: startIndex,
+        majorStatus: "none", 
+        minorStatuses: [],   
+        statusTurns: 0,      
+        toxicCounter: 1,     
+    };
     
-    for (let i = 0; i < lines.length; i++) {
+    // 解析名称行（例如：##1.皮卡丘##）
+    const nameLine = lines[startIndex].trim();
+    const nameMatch = nameLine.match(/##(\d+)\.([^#]+)##/);
+    if (nameMatch) {
+        pokemon.name = nameMatch[2].trim();
+    }
+    
+    // 解析后续行
+    let i = startIndex + 1;
+    while (i < lines.length) {
         const line = lines[i].trim();
         
-        if (line.startsWith('##') && line.endsWith('##')) {
-            // 开始新宝可梦
-            if (currentPokemon) pokemons.push(currentPokemon);
-            currentPokemon = {
-                moves: [],
-                status: 'normal',
-                currentHP: 0,
-                maxHP: 0
-            };
-            
-            // 解析序号和名称
-            const match = line.match(/##(\d+)\.(.+)##/);
-            if (match) {
-                currentPokemon.index = parseInt(match[1]);
-                currentPokemon.name = match[2].trim();
+        // 检查是否是下一个宝可梦的开始
+        if (line.startsWith("##") && i > startIndex && line.match(/^##\d+\./)) {
+            pokemon.endIndex = i - 1;
+            break;
+        }
+        
+        if (line.startsWith("属性:")) {
+            // 兼容新旧格式：使用/分隔属性
+            const typesText = line.replace("属性:", "").trim();
+            pokemon.types = typesText.split(/[/,]/).map(t => t.trim());
+        } else if (line.startsWith("等级:")) {
+            pokemon.level = parseInt(line.replace("等级:", "")) || 0;
+        } else if (line.startsWith("能力值:")) {
+            const statsText = line.replace("能力值:", "").trim();
+            const stats = statsText.split(",").map(s => parseInt(s.trim()) || 0);
+            if (stats.length >= 6) {
+                pokemon.stats = {
+                    hp: stats[0], atk: stats[1], def: stats[2],
+                    spAtk: stats[3], spDef: stats[4], speed: stats[5]
+                };
+                pokemon.maxHP = stats[0];
             }
-        } else if (currentPokemon) {
-            // 解析属性
-            if (line.startsWith('属性:')) {
-                currentPokemon.types = line.replace('属性:', '').trim().split('/');
+        } else if (line.startsWith("特性:")) {
+            pokemon.ability = line.replace("特性:", "").trim();
+        } else if (line.startsWith("携带道具:")) {
+            const itemInfo = line.replace("携带道具:", "").trim();
+            if (itemInfo !== "无") {
+                // 兼容新旧格式：只取道具名称（第一个字段）
+                pokemon.item.name = itemInfo.split(",")[0].trim();
+                pokemon.item.effect = itemEffects[pokemon.item.name] || null;
             }
-            // 解析等级
-            else if (line.startsWith('等级:')) {
-                currentPokemon.level = parseInt(line.replace('等级:', '').trim());
+        } else if (line.startsWith("生命值当前/上限:")) {
+            const hpText = line.replace("生命值当前/上限:", "").trim();
+            const hp = hpText.split("/").map(h => parseInt(h.trim()) || 0);
+            if (hp.length >= 2) {
+                pokemon.currentHP = hp[0];
+                pokemon.maxHP = hp[1];
             }
-            // 解析能力值
-            else if (line.startsWith('能力值:')) {
-                const stats = line.replace('能力值:', '').trim().split(',');
-                if (stats.length >= 6) {
-                    currentPokemon.stats = {
-                        hp: parseInt(stats[0]),
-                        attack: parseInt(stats[1]),
-                        defense: parseInt(stats[2]),
-                        specialAttack: parseInt(stats[3]),
-                        specialDefense: parseInt(stats[4]),
-                        speed: parseInt(stats[5])
-                    };
+        } else if (line.startsWith("招式列表:")) {
+            // 解析接下来的招式
+            for (let j = i + 1; j < lines.length; j++) {
+                const moveLine = lines[j].trim();
+                
+                // 如果遇到下一个宝可梦的开始或空行，停止解析
+                if (moveLine.startsWith("##") || moveLine === "") {
+                    i = j - 1;
+                    break;
                 }
-            }
-            // 解析特性
-            else if (line.startsWith('特性:')) {
-                currentPokemon.ability = line.replace('特性:', '').trim();
-            }
-            // 解析携带道具
-            else if (line.startsWith('携带道具:')) {
-                currentPokemon.heldItem = line.replace('携带道具:', '').trim();
-            }
-            // 解析生命值
-            else if (line.startsWith('生命值当前/上限:')) {
-                const hpMatch = line.match(/生命值当前\/上限:(\d+)\/(\d+)/);
-                if (hpMatch) {
-                    currentPokemon.currentHP = parseInt(hpMatch[1]);
-                    currentPokemon.maxHP = parseInt(hpMatch[2]);
-                }
-            }
-            // 解析招式
-            else if (line.startsWith('招式') && line.includes('.')) {
-                const moveMatch = line.match(/招式\d+\.(.+)/);
-                if (moveMatch) {
-                    const moveParts = moveMatch[1].split(',');
-                    if (moveParts.length >= 6) {
-                        const move = {
-                            name: moveParts[0].trim(),
-                            type: moveParts[1].trim(),
-                            category: moveParts[2].trim(),
-                            accuracy: parseInt(moveParts[3]) || 100,
-                            power: parseInt(moveParts[4]) || 0,
-                            effectType: parseInt(moveParts[5]) || 0 // 新格式的效果类型
-                        };
-                        
-                        // 兼容旧格式：如果还有更多字段，忽略它们
-                        if (moveParts.length > 6) {
-                            // 旧格式的效果描述被忽略
-                        }
-                        
-                        currentPokemon.moves.push(move);
+                
+                // 解析招式行
+                if (moveLine.startsWith("招式")) {
+                    const move = parseMove(moveLine);
+                    if (move.name) {
+                        pokemon.moves.push(move);
                     }
+                }
+                
+                // 如果到达文件末尾
+                if (j === lines.length - 1) {
+                    i = j;
                 }
             }
         }
+        
+        i++;
+        
+        // 如果到达文件末尾
+        if (i >= lines.length) {
+            pokemon.endIndex = lines.length - 1;
+            break;
+        }
     }
     
-    if (currentPokemon) pokemons.push(currentPokemon);
-    return pokemons;
+    return pokemon;
 }
 
 // 解析招式信息
@@ -1271,6 +1283,7 @@ function parseMove(line) {
         category: "",
         accuracy: 100,
         power: 0,
+        effectType: 0, // 新格式的效果类型
         effect: null
     };
     
@@ -1280,22 +1293,44 @@ function parseMove(line) {
         move.name = match[1].trim();
         // 去掉前导逗号后再切分参数
         const params = match[2].replace(/^,/, "").split(",");
-
-        // 解析招式参数（参数顺序：类型, 分类, 命中, 威力, ...）
+        
+        // 解析招式参数
         if (params.length >= 1) move.type = params[0].trim();
         if (params.length >= 2) move.category = params[1].trim();
         if (params.length >= 3) move.accuracy = parseInt(params[2].trim()) || 100;
         if (params.length >= 4) move.power = parseInt(params[3].trim()) || 0;
+        
+        // 兼容新旧格式：处理效果类型
+        if (params.length >= 5) {
+            const effectField = params[4].trim();
+            
+            // 尝试解析为数字（新格式）
+            const effectNum = parseInt(effectField);
+            if (!isNaN(effectNum)) {
+                move.effectType = effectNum;
+            } else {
+                // 旧格式：根据"是"/"否"转换为数字
+                if (effectField === "是") {
+                    move.effectType = 2; // 特殊效果
+                } else if (effectField === "否") {
+                    move.effectType = 0; // 无效果
+                }
+                // 忽略旧格式的其他字段
+            }
+        }
+        
+        // 如果有更多字段，忽略它们（旧格式的额外字段）
     }
     
     return move;
 }
 
-// 解析导入的数据
+
+// 解析导入的数据 - 增强兼容性
 function parseImportData(data) {
     const lines = data.split(/\r?\n/).map(l => l.replace(/\r/, ''));
 
-    // 重置战斗状态（保留引用）
+    // 重置战斗状态
     battleState.myTeam = [];
     battleState.opponentTeam = [];
     battleState.myBag = { healing: [], pokeballs: [] };
@@ -1347,7 +1382,7 @@ function parseImportData(data) {
         }
     }
 
-    // 解析对手的背包（可能包含训练家名）
+    // 解析对手的背包
     const oppBagIdx = findLineIndex('#对手的背包#');
     if (oppBagIdx >= 0) {
         // 如果下一行形如 ##名字## 则记录为训练家名字
@@ -1406,12 +1441,12 @@ function parseImportData(data) {
     battleState.myTeam = parseTeam(myTeamIdx, t => t === '#对方宝可梦阵容#' || t.startsWith('#') && t !== '#我方宝可梦阵容#');
     battleState.opponentTeam = parseTeam(oppTeamIdx, t => t.startsWith('#') && t !== '#对方宝可梦阵容#');
 
-    // 诊断日志：记录找到的索引和解析到的数量
+    // 诊断日志
     addToLog(`找到索引：我的背包=${myBagIdx}, 对手背包=${oppBagIdx}, 我方阵容=${myTeamIdx}, 对方阵容=${oppTeamIdx}`);
     addToLog(`导入道具：我方恢复=${battleState.myBag.healing.length} 精灵球=${battleState.myBag.pokeballs.length}；对方恢复=${battleState.opponentBag.healing.length} 精灵球=${battleState.opponentBag.pokeballs.length}`);
     addToLog(`解析结果：我方宝可梦=${battleState.myTeam.length}，对方宝可梦=${battleState.opponentTeam.length}`);
 
-    // 如果未解析到宝可梦，则尝试回退解析：扫描所有 ##数字. 开头的标题并根据位置分配到两队
+    // 如果未解析到宝可梦，尝试回退解析
     if (battleState.myTeam.length === 0 && battleState.opponentTeam.length === 0) {
         addToLog('回退解析：未在预期区块找到宝可梦，开始全局扫描标题...');
         const allPokemons = [];
@@ -1435,7 +1470,7 @@ function parseImportData(data) {
                 } else if (oppTeamIdx >= 0) {
                     if (idx > oppTeamIdx) battleState.opponentTeam.push(entry.p);
                 } else {
-                    // 没有标记区块，按顺序分配：前半归我方，后半归对方（保守策略）
+                    // 没有标记区块，按顺序分配
                     const half = Math.ceil(allPokemons.length / 2);
                     const pos = allPokemons.indexOf(entry);
                     if (pos < half) battleState.myTeam.push(entry.p);
@@ -1449,7 +1484,7 @@ function parseImportData(data) {
         }
     }
 
-    // 初始化当前宝可梦索引为0
+    // 初始化当前宝可梦索引
     battleState.currentPokemon = { my: 0, opponent: 0 };
 
     updateUI();
@@ -1459,8 +1494,8 @@ function parseImportData(data) {
     } else {
         addToLog("导入完成，但宝可梦数据不完整，无法开始对战。");
     }
-
 }
+
 //---------------------------------------------------------数据解析-完------------------------------------------------------
 function initBattle() {
     // 检查是否有宝可梦数据
@@ -1691,10 +1726,23 @@ function updateMoveList() {
     myPokemon.moves.forEach((move, index) => {
         const moveElement = document.createElement('div');
         moveElement.className = 'move-option';
+        
+        // 显示效果类型信息
+        let effectInfo = '';
+        if (move.effectType !== undefined) {
+            const effectTypes = {
+                '0': '无效果',
+                '1': '能力提升',
+                '-1': '能力降低', 
+                '2': '特殊效果'
+            };
+            effectInfo = ` | 效果:${effectTypes[move.effectType] || '未知'}`;
+        }
+        
         moveElement.innerHTML = `
             <strong>${move.name}</strong> (${move.type}) 
             ${move.power > 0 ? `威力:${move.power}` : '变化'} 
-            命中:${move.accuracy}%
+            命中:${move.accuracy}%${effectInfo}
         `;
         moveElement.addEventListener('click', () => useMove(index));
         moveList.appendChild(moveElement);
@@ -3215,23 +3263,76 @@ function isValidStatChange(side, stat, amount) {
 
 // 处理变化招式效果
 function applyMoveEffect(move, user, target) {
-    // 简化处理：只处理一些基本的效果
-    if (move.effect) {
-        // 这里可以根据move.effect的具体内容应用效果
-        // 例如改变能力值、添加状态等
+    // 优先使用招式数据库中的效果
+    const moveData = MovesDatabase[move.name];
+    if (moveData) {
+        // 使用招式数据库中的效果
+        switch (moveData.effectType) {
+            case MoveEffectTypes.STAT_UP:
+            case MoveEffectTypes.STAT_DOWN:
+                MoveEffectHandler.handleStatChange(moveData, user, target);
+                break;
+            case MoveEffectTypes.SPECIAL:
+                if (moveData.weather) {
+                    MoveEffectHandler.handleWeather(moveData, battleState);
+                }
+                if (moveData.status) {
+                    MoveEffectHandler.handleStatus(moveData, target);
+                }
+                break;
+        }
+    } else {
+        // 如果没有在数据库中定义，使用解析的效果类型
+        switch (move.effectType) {
+            case 1: // 能力提升
+                // 默认提升攻击
+                applyStatChange(user === battleState.myTeam[battleState.currentPokemon.my] ? 'my' : 'opponent', 'atk', 1);
+                addToLog(`${user.name}的攻击提升了！`);
+                break;
+            case -1: // 能力降低
+                // 默认降低防御
+                applyStatChange(target === battleState.myTeam[battleState.currentPokemon.my] ? 'my' : 'opponent', 'def', -1);
+                addToLog(`${target.name}的防御降低了！`);
+                break;
+            case 2: // 特殊效果
+                // 根据招式名称判断效果
+                handleSpecialMoveEffect(move, user, target);
+                break;
+            default: // 无效果
+                // 不做任何处理
+                break;
+        }
     }
-    
-    // 处理一些常见的招式效果
+}
+
+// 处理特殊招式效果
+function handleSpecialMoveEffect(move, user, target) {
+    // 根据招式名称判断具体效果
     switch (move.name) {
-        case '影子分身':
-            applyStatChange(user === battleState.myTeam[battleState.currentPokemon.my] ? 'my' : 'opponent', 'evasion', 1);
+        case '催眠粉':
+            if (canApplyStatus(target, 'sleep')) {
+                target.status = 'sleep';
+                addToLog(`${target.name}陷入了睡眠状态！`);
+            }
             break;
-        case '蝶舞':
-            applyStatChange(user === battleState.myTeam[battleState.currentPokemon.my] ? 'my' : 'opponent', 'speed', 1);
-            applyStatChange(user === battleState.myTeam[battleState.currentPokemon.my] ? 'my' : 'opponent', 'spAtk', 1);
-            applyStatChange(user === battleState.myTeam[battleState.currentPokemon.my] ? 'my' : 'opponent', 'spDef', 1);
+        case '寄生种子':
+            if (!target.minorStatuses.includes('leech-seed')) {
+                target.minorStatuses.push('leech-seed');
+                addToLog(`${target.name}被种下了寄生种子！`);
+            }
             break;
-        // 可以继续添加更多招式的效果处理
+        case '大晴天':
+            battleState.weather = 'sun';
+            addToLog('天气变成了大晴天！');
+            break;
+        case '青草场地':
+            battleState.terrain = 'grassy';
+            addToLog('场地变成了青草场地！');
+            break;
+        // 可以继续添加更多招式的特殊效果
+        default:
+            addToLog(`${move.name}产生了特殊效果！`);
+            break;
     }
 }
 
@@ -3348,5 +3449,4 @@ function executeMove(attacker, defender, move, side) {
     </script>
 </body>
 </html>
-</body>
-</html>
+
