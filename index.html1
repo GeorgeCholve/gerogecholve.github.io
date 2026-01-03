@@ -1,0 +1,4818 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>宝可梦对战模拟器</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <style>
+     /* 像素风格字体 */
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=DotGothic16&display=swap');
+        
+        /* 基本样式重置 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+        }
+
+body {
+            font-family: 'DotGothic16', 'Press Start 2P', monospace;
+            line-height: 1.4;
+            color: #222;
+            background-color: #f0e6d2;
+            background-image: 
+                linear-gradient(45deg, #e8d8c8 25%, transparent 25%),
+                linear-gradient(-45deg, #e8d8c8 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #e8d8c8 75%),
+                linear-gradient(-45deg, transparent 75%, #e8d8c8 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            padding: 10px;
+            min-height: 100vh;
+        }
+
+.container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 15px;
+            border-radius: 0;
+            border: 4px solid #333;
+            box-shadow: 8px 8px 0 #666, 16px 16px 0 #999;
+            position: relative;
+        }
+/* 像素风格边框装饰 */
+        .container::before {
+            content: "";
+            position: absolute;
+            top: -8px;
+            left: -8px;
+            right: -8px;
+            bottom: -8px;
+            border: 2px solid #e74c3c;
+            z-index: -1;
+        }
+
+h1, h2, h3, h4, h5 {
+            margin-bottom: 10px;
+            color: #e74c3c;
+            text-shadow: 1px 1px 0 #c0392b;
+            font-weight: normal;
+            letter-spacing: 1px;
+        }
+        
+        h1 {
+            font-size: 24px;
+            text-align: center;
+            padding: 10px;
+            border-bottom: 4px dashed #e74c3c;
+            margin-bottom: 20px;
+            background-color: #ffe6e6;
+        }
+        
+        h2 {
+            font-size: 18px;
+            padding-left: 8px;
+            border-left: 4px solid #e74c3c;
+        }
+        
+        h3 {
+            font-size: 16px;
+            background-color: #ffe6e6;
+            padding: 6px 10px;
+            border: 2px solid #333;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+        
+        h4 {
+            font-size: 14px;
+            color: #333;
+            margin-top: 10px;
+            margin-bottom: 8px;
+            border-bottom: 2px dotted #e74c3c;
+            padding-bottom: 3px;
+        }
+
+/* 导入信息区域 */
+.import-section {
+            display: flex;
+            margin-bottom: 20px;
+            gap: 20px;
+            flex-wrap: wrap;
+            /* 添加背景图 */
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23f8f0f0"/><rect x="0" y="0" width="10" height="10" fill="%23e74c3c" opacity="0.1"/><rect x="20" y="20" width="10" height="10" fill="%23e74c3c" opacity="0.1"/><rect x="40" y="40" width="10" height="10" fill="%23e74c3c" opacity="0.1"/><rect x="60" y="60" width="10" height="10" fill="%23e74c3c" opacity="0.1"/><rect x="80" y="80" width="10" height="10" fill="%23e74c3c" opacity="0.1"/></svg>');
+    background-size: 100px 100px;
+    background-repeat: repeat;
+    position: relative;
+    padding: 15px;
+    border: 3px solid #333;
+    border-radius: 0;
+        }
+        
+        .format-info {
+            flex: 1;
+            min-width: 300px;
+            background: #f8f0f0;
+            padding: 12px;
+            border: 3px solid #333;
+            border-radius: 0;
+            position: relative;
+        }
+
+.format-info::after {
+            content: "";
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+            border: 2px solid #e74c3c;
+            z-index: -1;
+        }
+        
+        .import-area {
+            flex: 2;
+            min-width: 300px;
+        }
+
+.format-content, #import-data {
+            width: 100%;
+            height: 200px;
+            padding: 10px;
+            border: 3px solid #333;
+            border-radius: 0;
+            background: #fff;
+            font-family: 'DotGothic16', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            overflow-y: auto;
+            line-height: 1.3;
+            resize: vertical;
+        }
+
+.import-buttons {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+        }
+
+/* 像素风格按钮 */
+        button {
+            padding: 8px 15px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 0;
+            cursor: pointer;
+            font-family: 'Press Start 2P', 'DotGothic16', monospace;
+            font-size: 12px;
+            transition: all 0.1s;
+            position: relative;
+            border: 2px solid #333;
+            box-shadow: 3px 3px 0 #333;
+        }
+
+button:hover {
+            background: #c0392b;
+            transform: translate(1px, 1px);
+            box-shadow: 2px 2px 0 #333;
+        }
+        button:active {
+            transform: translate(3px, 3px);
+            box-shadow: 0px 0px 0 #333;
+        }
+        
+        button:disabled {
+            background: #aaa;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 3px 3px 0 #666;
+        }
+
+/* 对战界面 */
+.battle-section {
+    margin-bottom: 20px;
+    /* 添加背景图 */
+    background-image: url('https://i.postimg.cc/2585PWR3/奇树立绘4.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    padding: 15px;
+    border: 3px solid #333;
+    border-radius: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+/* 为对战界面添加遮罩层 */
+.battle-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.7);
+    z-index: 0;
+}
+
+/* 确保对战界面内部内容在遮罩层上方 */
+.pokemon-info, .battle-options, .battle-log {
+    position: relative;
+    z-index: 1;
+    background: rgba(255, 255, 255, 0.85);
+    padding: 12px;
+    border: 2px solid #333;
+}
+        
+        .pokemon-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .my-pokemon, .opponent-pokemon {
+            flex: 1;
+            min-width: 300px;
+            background: #f8f0f0;
+            padding: 12px;
+            border: 3px solid #333;
+            border-radius: 0;
+            position: relative;
+        }
+        
+        .my-pokemon {
+            border-left: 8px solid #3498db;
+        }
+        
+        .opponent-pokemon {
+            border-right: 8px solid #e74c3c;
+        }
+
+.pokemon-main {
+    margin-top: 10px;
+}
+
+.name-level, .hp-status {
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding: 5px 8px;
+            background: white;
+            border: 2px solid #333;
+        }
+        
+        .hp-bar-container {
+            height: 20px;
+            background: #ddd;
+            border: 2px solid #333;
+            margin: 8px 0;
+            position: relative;
+        }
+        
+        .hp-bar {
+            height: 100%;
+            background: #2ecc71;
+            width: 100%;
+            transition: width 0.5s;
+        }
+        
+        .hp-bar.low {
+            background: #e74c3c;
+        }
+        
+        .hp-bar.medium {
+            background: #f39c12;
+        }
+        
+        .hp-text {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            line-height: 20px;
+            font-size: 12px;
+            color: #333;
+            font-weight: bold;
+        }
+
+.toggle-details {
+    width: 100%;
+    margin-bottom: 10px;
+    background: #95a5a6;
+}
+
+.pokemon-details {
+    display: none;
+    padding: 10px;
+    background: #ecf0f1;
+    border-radius: 5px;
+}
+
+.pokemon-details.active {
+    display: block;
+}
+
+/* 对战选项 */
+.battle-options {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    margin-bottom: 20px;
+}
+
+.options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.option-section {
+    flex: 1;
+    min-width: 200px;
+}
+
+.move-list, .pokemon-list, .item-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.move-option, .pokemon-option, .item-option {
+    padding: 8px;
+    background: #ecf0f1;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.move-option:hover, .pokemon-option:hover, .item-option:hover {
+    background: #d5dbdb;
+}
+
+/* 对战记录 */
+.battle-log {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+.log-content {
+    height: 200px;
+    overflow-y: auto;
+    padding: 10px;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-family: monospace;
+    font-size: 12px;
+}
+
+/* 导出数据区域 */
+.export-section {
+    margin-top: 20px;
+}
+
+#export-data {
+    width: 100%;
+    height: 200px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background: #f9f9f9;
+    font-family: monospace;
+    font-size: 12px;
+    resize: vertical;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .import-section, .pokemon-info, .options {
+        flex-direction: column;
+    }
+    
+    .my-pokemon, .opponent-pokemon {
+        margin-bottom: 15px;
+    }
+}
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>宝可梦对战模拟器</h1>
+        
+        <!-- 导入信息区域 -->
+        <div class="import-section">
+            <div class="format-info">
+                <h3>输入格式</h3>
+                <div class="format-content">
+                    <!-- 格式说明将动态生成 -->
+                </div>
+            </div>
+            <div class="import-area">
+                <h3>导入信息</h3>
+                <textarea id="import-data" placeholder="粘贴到此处"></textarea>
+                <div class="import-buttons">
+                    <button id="import-btn">导入信息</button>
+                    <button id="reset-btn">重置对战</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 对战界面 -->
+        <div class="battle-section">
+            <div class="pokemon-info">
+                <div class="my-pokemon">
+                    <h3>我方宝可梦</h3>
+                    <div class="pokemon-main">
+                        <div class="name-level">
+                            <span id="my-name">-</span>
+                            <span id="my-gender">-</span>
+                            <span id="my-level">-</span>
+                        </div>
+                        <div class="hp-status">
+                            <span id="my-hp">-/-</span>
+                            <span id="my-status">-</span>
+                        </div>
+                        <button class="toggle-details">▼ 其他信息</button>
+                        <div class="pokemon-details">
+                            <div>特性: <span id="my-ability">-</span></div>
+                            <div>道具: <span id="my-item">-</span></div>
+                            <div>场地: <span id="my-field">-</span></div>
+                            <div>能力变化: <span id="my-stats-change">-</span></div>
+                            <div>附加状态: <span id="my-additional-status">-</span></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="opponent-pokemon">
+                    <h3 id="opponent-title">对方宝可梦</h3>
+                    <div class="pokemon-main">
+                        <div class="name-level">
+                            <span id="opponent-name">-</span>
+                            <span id="opponent-gender">-</span>
+                            <span id="opponent-level">-</span>
+                        </div>
+                        <div class="hp-status">
+                            <span id="opponent-hp">-/-</span>
+                            <span id="opponent-status">-</span>
+                        </div>
+                        <button class="toggle-details">▼ 其他信息</button>
+                        <div class="pokemon-details">
+                            <div>特性: <span id="opponent-ability">-</span></div>
+                            <div>道具: <span id="opponent-item">-</span></div>
+                            <div>场地: <span id="opponent-field">-</span></div>
+                            <div>能力变化: <span id="opponent-stats-change">-</span></div>
+                            <div>附加状态: <span id="opponent-additional-status">-</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 对战选项 -->
+            <div class="battle-options">
+                <h3>对战选项</h3>
+                <div class="options">
+                    <div class="option-section">
+                        <h4>技能选择</h4>
+                        <div id="move-list" class="move-list">
+                            <!-- 技能列表将动态生成 -->
+                        </div>
+                    </div>
+                    <div class="option-section">
+                        <h4>宝可梦替换</h4>
+                        <div id="pokemon-list" class="pokemon-list">
+                            <!-- 宝可梦列表将动态生成 -->
+                        </div>
+                    </div>
+                    <div class="option-section">
+                        <h4>道具</h4>
+                        <div class="item-section">
+                            <h5>恢复药剂</h5>
+                            <div id="healing-items" class="item-list">
+                                <!-- 恢复道具列表将动态生成 -->
+                            </div>
+                            <h5>精灵球</h5>
+                            <div id="pokeballs" class="item-list">
+                                <!-- 精灵球列表将动态生成 -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="option-section">
+                        <button id="flee-btn">逃跑/认输</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 对战记录 -->
+            <div class="battle-log">
+                <h3>对战状况</h3>
+                <div id="log-content" class="log-content">
+                    <!-- 对战记录将动态生成 -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- 导出数据区域 -->
+        <div class="export-section">
+            <h3>导出变化后的数据</h3>
+            <textarea id="export-data" readonly></textarea>
+            <button id="export-btn">导出变化后的数据</button>
+        </div>
+    </div>
+
+    <script>
+/*-----------------------------------------------------------------------------------------------------------------script分界-----------------------------------------------------------------------
+##《数据目录》(乱序)
+=> 常量定义（所有常量对象）
+    typeEffectiveness, itemEffects, statusEffects, weatherEffects, terrainEffects
+=> 全局状态（battleState）
+    weather,terrain,fieldConditions,
+=> 数据解析函数
+    parseItems, parseMove, parsePokemon, parseImportData，
+    initBattle，
+=> UI更新函数（界面显示相关函数）
+    updateHPBar, updateStatChangesDisplay, updateMoveList, updatePokemonList, updateItemList
+    updateUI,     
+=> 工具函数（计算、检查等基础函数）
+    calculateEffectiveness, getStatModifier, calculateDamage, checkHit, checkCriticalHit
+    checkTeamFainted, canApplyStatus, getStatusCatchBonus, calculateCatchRate
+=> 状态效果函数（状态和场地的应用函数）
+    modifyStat, applyStatChange, isValidStatChange, getTurnOrder
+=> 战斗核心函数（战斗规则和逻辑函数）
+    applyStatusEffect, applyWeatherEffects, applyTerrainEffects, applyFieldConditions, applyStatusAndFieldEffects
+=> 战斗动作函数（具体的战斗操作函数）
+    useMove, applyMoveEffect, opponentTurn, useOpponentMove, useOpponentHealingItem
+    opponentSwitchPokemon, switchPokemon, useHealingItem, usePokeball
+    capturePokemon, captureTrainer, flee, endBattle
+=> 辅助函数（日志和选择界面相关函数）
+    addToLog, showPokemonSelection, selectReplacement
+=> 初始化函数（页面初始化和辅助函数）
+    init, initFormatInfo, exportData, resetBattle
+
+##完成功能：
+1.战场场状态：
+    天气：差不多；场地：差不多；其他：差远了。
+
+2.招式效果：
+    招式结构待优化，附加效果没写；变化招式不能用；
+
+3.特性：完全没有
+
+4,。道具效果：相当于没有；
+
+5.回复道具：
+    大部分回复道具；没有树果这种
+
+6.精灵球：
+    大部分球；
+
+7.状态效果：
+    主要异常状态：基本齐全；
+    次要状态：寄生种子、紧束、混乱、聚气；
+    其他状态：没写；
+
+8.能力变化：
+    基本齐全，没写特性和道具影响；
+
+9.导出：不能省略没改变数据；
+
+10.自定义特性、招式、道具：
+    待开发；
+
+11.对战AI：
+    低等，没策略；
+
+12.图形：没有。
+
+*/
+
+
+        // 属性相克表
+const typeEffectiveness = {
+    "普通": { "岩石": 0.5, "幽灵": 0, "钢铁": 0.5 },
+    "火": { "火": 0.5, "水": 0.5, "草": 2, "冰": 2, "虫": 2, "岩石": 0.5, "龙": 0.5, "钢铁": 0.5 },
+    "水": { "火": 2, "水": 0.5, "草": 0.5, "地面": 2, "岩石": 2, "龙": 0.5, "钢铁": 0.5 },
+    "电": { "水": 2, "电": 0.5, "草": 0.5, "地面": 0, "飞行": 2, "龙": 0.5, "钢铁": 0.5 },
+    "草": { "火": 0.5, "水": 2, "草": 0.5, "毒": 0.5, "地面": 2, "飞行": 0.5, "虫": 0.5, "岩石": 2, "龙": 0.5, "钢铁": 0.5 },
+    "冰": { "火": 0.5, "水": 0.5, "草": 2, "冰": 0.5, "地面": 2, "飞行": 2, "龙": 2, "钢铁": 0.5 },
+    "格斗": { "普通": 2, "冰": 2, "毒": 0.5, "飞行": 0.5, "超能力": 0.5, "虫": 0.5, "岩石": 2, "幽灵": 0, "黑暗": 2, "钢铁": 2, "妖精": 0.5 },
+    "毒": { "草": 2, "毒": 0.5, "地面": 0.5, "岩石": 0.5, "幽灵": 0.5, "钢铁": 0, "妖精": 2 },
+    "地面": { "火": 2, "电": 2, "草": 0.5, "毒": 2, "飞行": 0, "虫": 0.5, "岩石": 2, "钢铁": 2 },
+    "飞行": { "电": 0.5, "草": 2, "格斗": 2, "虫": 2, "岩石": 0.5, "钢铁": 0.5 },
+    "超能力": { "格斗": 2, "毒": 2, "超能力": 0.5, "黑暗": 0, "钢铁": 0.5 },
+    "虫": { "火": 0.5, "草": 2, "格斗": 0.5, "毒": 0.5, "飞行": 0.5, "超能力": 2, "幽灵": 0.5, "黑暗": 2, "钢铁": 0.5, "妖精": 0.5 },
+    "岩石": { "火": 2, "水": 0.5, "草": 0.5, "格斗": 0.5, "地面": 0.5, "飞行": 2, "虫": 2, "钢铁": 0.5 },
+    "幽灵": { "普通": 0, "超能力": 2, "幽灵": 2, "黑暗": 0.5 },
+    "龙": { "龙": 2, "钢铁": 0.5, "妖精": 0 },
+    "黑暗": { "格斗": 0.5, "超能力": 2, "幽灵": 2, "黑暗": 0.5, "妖精": 0.5 },
+    "钢铁": { "火": 0.5, "水": 0.5, "电": 0.5, "冰": 2, "岩石": 2, "钢铁": 0.5, "妖精": 2 },
+    "妖精": { "格斗": 2, "龙": 2, "黑暗": 2, "毒": 0.5, "钢铁": 0.5, "火": 0.5 }
+};
+
+// 道具效果数据
+const itemEffects = {
+    // 恢复道具
+    "伤药": { type: "healing", amount: 20 },
+    "好伤药": { type: "healing", amount: 60 },
+    "厉害伤药": { type: "healing", amount: 120 },
+    "全满药": { type: "healing", amount: "full" },
+    "全复药": { type: "healing", amount: "full", cureAllStatus: true },
+    "活力碎块": { type: "healing", amount: 30 },
+    "活力块": { type: "healing", amount: 60 },
+    "哞哞鲜奶": { type: "healing", amount: 100 },
+    
+    // 状态恢复道具
+    "解毒药": { type: "status", status: "poison", cure: true },
+    "烧伤药": { type: "status", status: "burn", cure: true },
+    "解冻药": { type: "status", status: "freeze", cure: true },
+    "解眠药": { type: "status", status: "sleep", cure: true },
+    "麻痹药": { type: "status", status: "paralysis", cure: true },
+    "万灵药": { type: "status", cureAllStatus: true },
+    "万能粉": { type: "status", cureAllStatus: true },
+    
+    // 全恢复道具
+    "元气粉": { type: "healing", amount: "half" },
+    "元气根": { type: "healing", amount: 200 },
+    "复活草": { type: "revive", amount: "half" },
+    "活力碎片": { type: "healing", amount: 50 },
+    "pp单项小补剂": { type: "pp", amount: 10 },
+    "pp单项全补剂": { type: "pp", amount: "full" },
+    "pp多项小补剂": { type: "pp", amount: 10, allMoves: true },
+    "pp多项全补剂": { type: "pp", amount: "full", allMoves: true },
+    
+    // 精灵球捕捉率（扩展版）
+    "精灵球": { 
+        type: "pokeball", 
+        catchRate: 1.0,
+        description: "普通的精灵球，用于捕捉宝可梦"
+    },
+    "超级球": { 
+        type: "pokeball", 
+        catchRate: 1.5,
+        description: "比精灵球更好的球，捕捉率更高"
+    },
+    "高级球": { 
+        type: "pokeball", 
+        catchRate: 2.0,
+        description: "性能很好的球，捕捉率比超级球更高"
+    },
+    "大师球": { 
+        type: "pokeball", 
+        catchRate: 255, // 必定捕捉
+        description: "必定能捉到野生宝可梦的最好的球"
+    },
+    "先机球": { 
+        type: "pokeball", 
+        catchRate: function(battleState, pokemon) {
+            // 在第一回合使用时有4倍效果
+            return battleState.turn <= 1 ? 4.0 : 1.0;
+        },
+        description: "在战斗开始时使用效果更好的球"
+    },
+    "公园球": { 
+        type: "pokeball", 
+        catchRate: function(battleState, pokemon) {
+            // 在狩猎区使用时有特殊效果
+            return 1.5;
+        },
+        description: "在狩猎区使用的特殊的球"
+    },
+    "计时球": { 
+        type: "pokeball", 
+        catchRate: function(battleState, pokemon) {
+            // 回合数越多效果越好
+            const turnFactor = Math.min(4.0, 1.0 + (battleState.turn * 0.3));
+            return turnFactor;
+        },
+        description: "战斗回合数越多就越容易捉到宝可梦的球"
+    },
+    "重复球": { 
+        type: "pokeball", 
+        catchRate: function(battleState, pokemon) {
+            // 对已经捕捉过的宝可梦有3倍效果
+            const hasCaptured = battleState.myTeam.some(p => p.name === pokemon.name);
+            return hasCaptured ? 3.0 : 1.0;
+        },
+        description: "对捉过的宝可梦更容易捉到的球"
+    },
+    "黑暗球": { 
+        type: "pokeball", 
+        catchRate: function(battleState, pokemon) {
+            // 在洞穴或夜晚有4倍效果
+            const isDarkEnvironment = battleState.weather === "none" || 
+                                     ["cave", "night"].includes(battleState.environment);
+            return isDarkEnvironment ? 4.0 : 1.0;
+        },
+        description: "在洞窟或夜晚使用效果更好的球"
+    },
+    "捕网球": { 
+        type: "pokeball", 
+        catchRate: function(battleState, pokemon) {
+            // 对虫系和水系宝可梦有3.5倍效果
+            const isBugOrWater = pokemon.types.some(type => 
+                type.includes("虫") || pokemon.types.indexOf("水") !== -1);
+            return isBugOrWater ? 3.5 : 1.0;
+        },
+        description: "对虫属性或水属性的宝可梦更容易捉到的球"
+    },
+    "潜水球": { 
+        type: "pokeball", 
+        catchRate: function(battleState, pokemon) {
+            // 对水中的宝可梦有3.5倍效果
+            const isInWater = battleState.terrain === "water" || 
+                            pokemon.types.indexOf("水") !== -1;
+            return isInWater ? 3.5 : 1.0;
+        },
+        description: "对钓到的或海底的宝可梦更容易捉到的球"
+    },
+    "巢穴球": { 
+        type: "pokeball", 
+        catchRate: function(battleState, pokemon) {
+            // 对低等级宝可梦有更好效果
+            const levelFactor = Math.max(1.0, (41 - pokemon.level) / 10);
+            return levelFactor;
+        },
+        description: "对等级越低的宝可梦就越容易捉到的球"
+    },
+    "治愈球": { 
+        type: "pokeball", 
+        catchRate: 1.0,
+        healOnCapture: true,
+        description: "捉到宝可梦后会将其治愈的球"
+    },
+    "纪念球": { 
+        type: "pokeball", 
+        catchRate: 1.0,
+        description: "用来纪念的特别设计的球"
+    },
+    "豪华球": { 
+        type: "pokeball", 
+        catchRate: 1.0,
+        friendshipBoost: true,
+        description: "捉到的宝可梦会变得亲密的舒适的球"
+    },
+    "巨乳球": { 
+        type: "pokeball", 
+        catchRate: 1.5,
+        description: "对乳房巨大的训练家更容易捉到的球"
+
+    },
+    "奴隶球": { 
+        type: "pokeball", 
+        catchRate: 1.5,
+        description: "用来捕捉奴隶宝可梦的球"
+    },
+    
+};
+
+// 携带道具效果
+const heldItemEffects = {
+    // 属性增强类
+    "木炭": { type: "held", boost: 1.2, element: "火" },
+    "神秘水滴": { type: "held", boost: 1.2, element: "水" },
+    "奇迹种子": { type: "held", boost: 1.2, element: "草" },
+    "磁铁": { type: "held", boost: 1.2, element: "电" },
+    "硬石头": { type: "held", boost: 1.2, element: "岩石" },
+    "黑带": { type: "held", boost: 1.2, element: "格斗" },
+    "尖锐鸟嘴": { type: "held", boost: 1.2, element: "飞行" },
+    "毒针": { type: "held", boost: 1.2, element: "毒" },
+    "银粉": { type: "held", boost: 1.2, element: "虫" },
+    "幽灵宝石": { type: "held", boost: 1.2, element: "幽灵" },
+    "龙之牙": { type: "held", boost: 1.2, element: "龙" },
+    "弯曲的勺子": { type: "held", boost: 1.2, element: "超能力" },
+    "黑色眼镜": { type: "held", boost: 1.2, element: "恶" },
+    "金属膜": { type: "held", boost: 1.2, element: "钢" },
+    
+    // 特殊效果类
+    "剩饭": { 
+        type: "held", 
+        effect: "turnEnd", 
+        description: "每回合结束时恢复最大HP的1/16",
+        heal: 0.0625 
+    },
+    "广角镜": { 
+        type: "held", 
+        effect: "accuracy", 
+        description: "招式命中率×1.1",
+        accuracyBoost: 1.1 
+    },
+    "焦点镜": { 
+        type: "held", 
+        effect: "critical", 
+        description: "提升会心一击率",
+        critRatio: 1 
+    },
+    "王者之证": { 
+        type: "held", 
+        effect: "flinch", 
+        description: "攻击招式有几率使对手畏缩",
+        chance: 0.1 
+    },
+    "空贝": { 
+        type: "held", 
+        effect: "recoil", 
+        description: "反弹受到伤害的1/8",
+        damageReturn: 0.125 
+    },
+    "光粉": { 
+        type: "held", 
+        effect: "evasion", 
+        description: "闪避率×1.1",
+        evasionBoost: 1.1 
+    },
+    
+    // 一次性消耗类
+    "气势披带": { 
+        type: "held", 
+        effect: "survive", 
+        description: "满HP时受到致命攻击会保留1HP",
+        oneTime: true 
+    },
+    "气势头带": { 
+        type: "held", 
+        effect: "endure", 
+        description: "有几率在受到攻击后保留1HP",
+        chance: 0.1,
+        oneTime: true 
+    },
+    "先制之爪": { 
+        type: "held", 
+        effect: "priority", 
+        description: "有几率使招式优先度+1",
+        chance: 0.5, 
+        oneTime: true
+    },
+    
+    // 树果类
+    "樱子果": { 
+        type: "held", 
+        effect: "berry", 
+        description: "解除麻痹状态",
+        cureStatus: "paralysis" 
+    },
+    "零余果": { 
+        type: "held", 
+        effect: "berry", 
+        description: "解除睡眠状态", 
+        cureStatus: "sleep" 
+    },
+    "桃桃果": { 
+        type: "held", 
+        effect: "berry", 
+        description: "解除中毒状态",
+        cureStatus: "poison" 
+    },
+    "莓莓果": { 
+        type: "held", 
+        effect: "berry", 
+        description: "解除灼伤状态",
+        cureStatus: "burn" 
+    },
+    "利木果": { 
+        type: "held", 
+        effect: "berry", 
+        description: "解除冰冻状态",
+        cureStatus: "freeze" 
+    },
+    "文柚果": { 
+        type: "held", 
+        effect: "berry", 
+        description: "HP低于1/2时恢复最大HP的1/4",
+        healThreshold: 0.5,
+        healAmount: 0.25 
+    }
+};
+
+// 将携带道具合并到主道具效果中
+Object.assign(itemEffects, heldItemEffects);
+
+// 状态效果
+const statusEffects = {
+    // 主要异常状态（互斥）
+    "paralysis": { 
+        name: "麻痹", 
+        speedReduction: 0.5, 
+        chanceToMove: 0.75,
+        type: "major"
+    },
+    "sleep": { 
+        name: "睡眠", 
+        maxTurns: 3, // 随机1-3回合
+        type: "major" 
+    },
+    "burn": { 
+        name: "灼伤", 
+        damage: 0.0625, 
+        attackReduction: 0.5,
+        type: "major"
+    },
+    "poison": { 
+        name: "中毒", 
+        damage: 0.125,
+        type: "major"
+    },
+    "badly-poisoned": { 
+        name: "剧毒", 
+        baseDamage: 0.0625,
+        type: "major"
+    },
+    "freeze": {
+        name: "冰冻",
+        thawChance: 0.2,
+        type: "major"
+    },
+    
+    // 次要状态（可共存）
+    "confusion": { 
+        name: "混乱", 
+        maxTurns: 4, 
+        damage: 0.33,
+        type: "minor",
+        chanceToHitSelf: 0.33
+    },
+    "leech-seed": {
+        name: "寄生种子",
+        damage: 0.125,
+        healing: 0.125,
+        type: "minor"
+    },
+    "bound": {
+        name: "紧束",
+        damage: 0.125,
+        maxTurns: 5,
+        type: "minor"
+    },
+    "focus-energy": {
+        name: "聚气",
+        critRatioBoost: 2,
+        type: "minor"
+    }
+};
+
+// 环境类型定义
+const EnvironmentTypes = {
+    FIELD: "field",
+    CAVE: "cave", 
+    WATER: "water",
+    BUILDING: "building",
+    FOREST: "forest"
+};
+
+// 时间定义
+const TimeOfDay = {
+    DAY: "day",
+    NIGHT: "night",
+    DUSK: "dusk"
+};
+// 添加天气
+const weatherEffects = {
+    "sun": {
+        name: "大晴天",
+        duration: 5,
+        fireBoost: 1.5,
+        waterReduction: 0.5,
+        solarBeamNoCharge: true,
+        weatherBallType: "Fire",
+        // 抑制效果：暴风雪命中率降为50%
+        blizzardAccuracy: 50
+    },
+    "rain": {
+        name: "下雨",
+        duration: 5,
+        waterBoost: 1.5,
+        fireReduction: 0.5,
+        thunderAccuracy: 100, // 必中
+        solarBeamDamageReduction: 0.5,
+        weatherBallType: "Water",
+        // 加成效果：闪电命中率提升
+        hurricaneAccuracy: 100
+    },
+    "sandstorm": {
+        name: "沙暴",
+        duration: 5,
+        rockSpDefBoost: 1.5,
+        damagePerTurn: 0.0625, // 每回合伤害
+        weatherBallType: "Rock",
+        // 岩石系特防提升
+        // 抑制效果：光合作用等恢复量减半
+        synthesisHealing: 0.25
+    },
+    "hail": {
+        name: "冰雹",
+        duration: 5,
+        damagePerTurn: 0.0625,
+        blizzardAccuracy: 100, // 必中
+        weatherBallType: "Ice",
+        // 加成效果：暴风雪必中
+        // 抑制效果：非冰系宝可梦每回合受伤
+    }
+};
+
+
+//添加场地
+const terrainEffects = {
+    "electric": {
+        name: "电气场地",
+        duration: 5,
+        groundedImmunity: "睡眠", // 地面上的宝可梦免疫睡眠
+        electricBoost: 1.3,
+        naturePower: "Thunderbolt",
+        // 加成效果：电系招式威力提升
+        // 抑制效果：防止睡眠状态
+    },
+    "grassy": {
+        name: "青草场地",
+        duration: 5,
+        grassBoost: 1.3,
+        healingPerTurn: 0.0625, // 每回合恢复
+        earthquakeReduction: 0.5,
+        naturePower: "Energy Ball",
+        // 加成效果：草系招式威力提升，地面系招式减半
+    },
+    "misty": {
+        name: "薄雾场地",
+        duration: 5,
+        dragonReduction: 0.5,
+        statusImmunity: true, // 免疫异常状态
+        naturePower: "Moonblast",
+        // 抑制效果：龙系招式减半，免疫异常状态
+    },
+    "psychic": {
+        name: "精神场地",
+        duration: 5,
+        psychicBoost: 1.3,
+        priorityImmunity: true, // 免疫先制招式
+        naturePower: "Psychic",
+        // 加成效果：超能力系招式威力提升
+        // 抑制效果：免疫先制攻击
+    }
+};
+
+// 特性数据库
+const AbilityDatabase = {
+    "猛火": {
+        description: "HP减少时火属性招式威力提升",
+        trigger: "hpLow",
+        threshold: 0.33,
+        effect: function(pokemon, battleState) {
+            if (pokemon.currentHP <= pokemon.maxHP * this.threshold) {
+                return { fireBoost: 1.5 };
+            }
+            return null;
+        }
+    },
+    "茂盛": {
+        description: "HP减少时草属性招式威力提升",
+        trigger: "hpLow",
+        threshold: 0.33,
+        effect: function(pokemon, battleState) {
+            if (pokemon.currentHP <= pokemon.maxHP * this.threshold) {
+                return { grassBoost: 1.5 };
+            }
+            return null;
+        }
+    },
+    "激流": {
+        description: "HP减少时水属性招式威力提升",
+        trigger: "hpLow", 
+        threshold: 0.33,
+        effect: function(pokemon, battleState) {
+            if (pokemon.currentHP <= pokemon.maxHP * this.threshold) {
+                return { waterBoost: 1.5 };
+            }
+            return null;
+        }
+    },
+    "静电": {
+        description: "受到接触招式攻击时可能使对手麻痹",
+        trigger: "contactDamage",
+        chance: 0.3,
+        effect: function(attacker, defender, battleState) {
+            if (Math.random() < this.chance && defender.status === 'none') {
+                defender.status = 'paralysis';
+                return `${defender.name}的静电特性使${attacker.name}麻痹了！`;
+            }
+            return null;
+        }
+    },
+    "蜕皮": {
+        description: "每回合有几率治愈异常状态",
+        trigger: "turnEnd",
+        chance: 0.3,
+        effect: function(pokemon, battleState) {
+            if (pokemon.status !== 'none' && Math.random() < this.chance) {
+                const oldStatus = pokemon.status;
+                pokemon.status = 'none';
+                return `${pokemon.name}的蜕皮特性治愈了${statusEffects[oldStatus].name}！`;
+            }
+            return null;
+        }
+    },
+    "技术高手": {
+        description: "使用低威力招式时威力提升",
+        trigger: "movePower",
+        threshold: 60,
+        effect: function(move, pokemon) {
+            if (move.power > 0 && move.power <= this.threshold) {
+                return { powerMultiplier: 1.5 };
+            }
+            return null;
+        }
+    },
+    "强行": {
+        description: "招式的追加效果消失但威力提升",
+        trigger: "moveEffect",
+        effect: function(move, pokemon) {
+            if (move.effectType !== MoveEffectTypes.NONE) {
+                return { 
+                    powerMultiplier: 1.3,
+                    ignoreEffects: true 
+                };
+            }
+            return null;
+        }
+    },
+    "降雨": {
+        description: "出场时天气变为下雨",
+        trigger: "onEntry",
+        effect: function(pokemon, battleState) {
+            battleState.weather = {
+                type: "rain",
+                turns: 5,
+                setBy: pokemon.name
+            };
+            return `${pokemon.name}的降雨特性使天气变为下雨！`;
+        }
+    },
+    "日照": {
+        description: "出场时天气变为大晴天",
+        trigger: "onEntry", 
+        effect: function(pokemon, battleState) {
+            battleState.weather = {
+                type: "sun",
+                turns: 5,
+                setBy: pokemon.name
+            };
+            return `${pokemon.name}的日照特性使天气变为大晴天！`;
+        }
+    },
+    "扬沙": {
+        description: "出场时天气变为沙暴",
+        trigger: "onEntry",
+        effect: function(pokemon, battleState) {
+            battleState.weather = {
+                type: "sandstorm", 
+                turns: 5,
+                setBy: pokemon.name
+            };
+            return `${pokemon.name}的扬沙特性使天气变为沙暴！`;
+        }
+    },
+    "降雪": {
+        description: "出场时天气变为冰雹",
+        trigger: "onEntry",
+        effect: function(pokemon, battleState) {
+            battleState.weather = {
+                type: "hail",
+                turns: 5, 
+                setBy: pokemon.name
+            };
+            return `${pokemon.name}的降雪特性使天气变为冰雹！`;
+        }
+    },
+    "威吓": {
+        description: "出场时降低对手攻击",
+        trigger: "onEntry",
+        effect: function(pokemon, target, battleState) {
+            if (target && target.currentHP > 0) {
+                applyStatChange('opponent', 'atk', -1);
+                return `${pokemon.name}的威吓特性降低了${target.name}的攻击！`;
+            }
+            return null;
+        }
+    },
+    "压迫感": {
+        description: "对手使用招式时消耗更多PP",
+        trigger: "moveUsed",
+        effect: function(attacker, defender, move) {
+            // PP消耗加倍
+            move.ppCost = (move.ppCost || 1) * 2;
+            return `${defender.name}的压迫感特性使${attacker.name}的${move.name}消耗了更多PP！`;
+        }
+    },
+    "再生力": {
+        description: "交换下场时恢复HP",
+        trigger: "onExit",
+        effect: function(pokemon, battleState) {
+            const healAmount = Math.floor(pokemon.maxHP / 3);
+            pokemon.currentHP = Math.min(pokemon.maxHP, pokemon.currentHP + healAmount);
+            return `${pokemon.name}的再生力特性恢复了HP！`;
+        }
+    },
+    "神奇守护": {
+        description: "只受到效果拔群招式的伤害",
+        trigger: "damageCalculation",
+        effect: function(move, attacker, defender, damage) {
+            const effectiveness = calculateEffectiveness(move.type, defender.types);
+            if (effectiveness <= 1) {
+                return { damage: 0 }; // 非效果拔群则伤害为0
+            }
+            return null;
+        }
+    },
+    "魔法镜": {
+        description: "反弹变化招式",
+        trigger: "statusMoveUsed", 
+        effect: function(move, attacker, defender) {
+            if (move.effectType !== MoveEffectTypes.NONE && move.power === 0) {
+                // 反弹效果给使用者
+                applyMoveEffect(move, defender, attacker);
+                return `${defender.name}的魔法镜特性反弹了${move.name}！`;
+            }
+            return null;
+        }
+    },
+    "恶作剧之心": {
+        description: "变化招式优先度+1",
+        trigger: "priorityCheck",
+        effect: function(move, pokemon) {
+            if (move.category === "变化") {
+                return { priorityBonus: 1 };
+            }
+            return null;
+        }
+    },
+
+//----------------------------1.3添加的特性，未测试----------------------------
+    "锐利目光": {
+        description: "无法被降低命中率",
+        trigger: "accuracyChangeAttempt",
+        effect: function(change, pokemon) {
+            if (change < 0) {
+                return { preventChange: true };
+            }
+            return null;
+        }
+    },
+    "黏着": {
+        description: "无法被降低闪避率",
+        trigger: "evasionChangeAttempt",
+        effect: function(change, pokemon) {
+            if (change < 0) {
+                return { preventChange: true };
+            }
+            return null;
+        }
+    },
+    "漂浮": {
+        description: "免疫地面系招式和地面状态效果",
+        trigger: "typeImmunityCheck",
+        effect: function(move, pokemon) {
+            if (move.type === "地面") {
+                return { immune: true };
+            }
+            return null;
+        }
+    },
+    "持久力":{
+        description:"受到攻击时，防御提升一级",
+        trigger:"damageTaken",
+        effect:function(attacker,defender,damage){
+            applyStatChange('self','def',1);
+            return `${defender.name}的持久力特性提升了防御！`;
+    }
+    },
+    "破格":{
+        description:"招式无视对手特性效果",
+        trigger:"damageCalculation",
+        effect:function(move,attacker,defender,damage){
+            return { ignoreAbilities: true };
+        }
+    },
+    "舞者":{
+        description:"复制对手的舞蹈类招式",
+        trigger:"moveUsed",
+        effect:function(move,attacker,defender){
+            const danceMoves = ["剑舞","龙之舞","冥想","铁壁","高速移动","影子分身"];
+            if(danceMoves.includes(move.name)){
+                applyMoveEffect(move,defender,attacker);
+                return `${defender.name}的舞者特性复制了${attacker.name}的${move.name}！`;
+            }
+            return null;
+        }
+    },
+    "健壮胸肌":{
+        description:"无法被降低攻击力",
+        trigger: "statChangeAttempt",
+        effect: function(stat, change, pokemon) {
+            if (stat === 'attack' && change < 0) {
+                return { preventChange: true };
+            }
+            return null;
+        }
+    },
+    "连续攻击":{
+        description:"可以连续使用多次同一招式",
+        trigger: "moveUsed",
+        effect: function(move, attacker, defender, battleState) {
+            if (!attacker.lastMove || attacker.lastMove.name !== move.name) {
+                attacker.lastMove = move;
+                attacker.moveCount = 1;
+            } else {
+                attacker.moveCount += 1;   
+    }
+            if (attacker.moveCount < 3) {
+                return { repeatMove: true };
+            } else {
+                attacker.moveCount = 0; // 重置计数
+            }
+            return null;
+        }
+    },
+    "优游自如":{
+        description:"下雨天时速度提升",
+        trigger: "turnStart",
+        effect: function(pokemon, battleState) {
+            if (battleState.weather && battleState.weather.type === "rain") {
+                return { speedBoost: 1.5 }; 
+    }
+            return null;
+        }
+    },
+    "迟钝":{
+        descriptiom:"拥有迟钝特性的宝可梦不会处于着迷状态，也不会受到诱惑的影响。",
+        trigger:"statusApplied",
+        effect:function(status,pokemon){
+            if(status==="infatuation"||status==="attraction"){
+                return { preventStatus: true };
+    }
+            return null;
+        }
+    },
+    "精神力":{
+        description:"不会陷入畏缩状态",
+        trigger:"statusApplied",
+        effect:function(status,pokemon){
+            if(status==="flinch"){
+                return { preventStatus: true };
+    }
+            return null;
+        }
+    },
+    "压迫感":{
+        description:"对手使用招式时消耗更多PP",
+        trigger:"moveUsed",
+        effect:function(attacker,defender,move){
+            move.ppCost=(move.ppCost||1)*2;
+            return `${defender.name}的压迫感特性使${attacker.name}的${move.name}消耗了更多PP！`;
+    }
+    },
+    "免疫":{
+        description:"免疫中毒和剧毒",
+        trigger:"statusApplied",
+        effect:function(status,pokemon){
+            if(status==="poison"||status==="badly-poisoned"){
+                return { preventStatus: true };
+    }            return null;
+        }
+    },
+    "迷人之躯":{
+        description:"对手使出接触类招式后会被迷惑",
+        trigger:"contactDamage",
+        effect:function(attacker,defender,battleState){
+            if(attacker.status==="none"){
+                attacker.status="confusion";
+                return `${defender.name}的迷人之躯特性使${attacker.name}迷惑了！`;
+    }
+            return null;
+        }
+    },
+    "食草":{
+        description:"受到草属性招式攻击时不会损失HP，并且攻击力提升1级",
+        trigger:"damageTaken",
+        effect:function(attacker,defender,damage,move){
+            if(move.type==="草"){
+                applyStatChange('self','attack',1);
+                return `${defender.name}的食草特性使其免疫了草属性招式的伤害，并提升了攻击！`;
+    }
+            return null;
+        }
+    },
+    "轻装":{
+        description:"当宝可梦使用或失去携带的道具时，其速度会翻倍",
+        trigger:"itemChange",
+        effect:function(pokemon,battleState){
+            return { speedBoost: 2.0 };
+        }
+    },
+    "强壮之颚":{
+        description:"咬住类招式威力提升",
+        trigger:"movePower",
+        effect:function(move,pokemon){
+            const bitingMoves=["咬住","咬碎","十字牙","咬碎","暗袭要害"];
+            if(bitingMoves.includes(move.name)){
+                return { powerMultiplier:1.5 };
+    }
+            return null;
+        }
+    },
+    "冰冻皮肤":{
+        description:"冰冻皮肤特性使一般属性的招式变为冰属性，并且威力提升20%",
+        trigger:"moveType",
+        effect:function(move,pokemon){
+            if(move.type==="一般"){
+                return { newType:"冰", powerMultiplier:1.2 };
+    }           
+        return null;
+        }
+    },
+    "复制":{
+        description:"出场时复制对手的特性",
+        trigger:"onEntry",
+        effect:function(pokemon,target,battleState){
+            if(target&&target.currentHP>0){
+                pokemon.ability=target.ability;
+                return `${pokemon.name}的复制特性复制了${target.name}的特性！`;
+    }
+            return null;
+        }
+    },
+    "妖精皮肤":{
+        description:"妖精皮肤特性使一般属性的招式变为妖精属性，并且威力提升20%",
+        trigger:"moveType",
+        effect:function(move,pokemon){
+            if(move.type==="一般"){
+                return { newType:"妖精", powerMultiplier:1.2 };
+    }           
+        return null;
+        }
+    },
+    "斗争心":{
+        descriptiom:"面对性别相同的对手，会燃起斗争心，变得更强。而面对性别不同的，则会变弱。",
+        trigger:"battleStart",
+        effect:function(pokemon,target,battleState){
+            if(pokemon.gender&&target.gender){
+                if(pokemon.gender===target.gender){
+                    return { attackBoost:1.2, specialAttackBoost:1.2 };
+                }else{
+                    return { attackReduction:0.8, specialAttackReduction:0.8 };
+         }
+                }
+        return null;
+        }
+    },
+    "白色烟雾":{
+        description:"无法被降低任何能力",
+        trigger: "statChangeAttempt",
+        effect: function(stat, change, pokemon) {
+            if (change < 0) {
+                return { preventChange: true };
+            }
+            return null;
+        }
+    },
+    "火焰之躯":{
+        description:"受到接触招式攻击时可能使对手烧伤",
+        trigger:"contactDamage",
+        chance:0.3,
+        effect:function(attacker,defender,battleState){
+            if(Math.random()<this.chance&&attacker.status==='none'){
+                attacker.status='burn';
+                return `${defender.name}的火焰之躯特性使${attacker.name}烧伤了！`;
+    }
+            return null;
+        }
+    },
+    "怪力钳":{
+        description:"因为引以为豪的大钳子，攻击力不会被降低",
+        trigger: "statChangeAttempt",
+        effect: function(stat, change, pokemon) {
+            if (stat === 'attack' && change < 0) {
+                return { preventChange: true };
+    }
+            return null;
+        }
+    },
+    
+    "隔音":{
+        description:"免疫声音类招式和效果",
+        trigger:"typeImmunityCheck",
+        effect:function(move,pokemon){
+            const soundMoves=["叫声","吵闹","大声咆哮","金属音","回声"];
+            if(soundMoves.includes(move.name)){
+                return { immune:true };
+    }
+            return null;
+        }
+    },
+    
+
+    "避雷针":{
+        description:"当被电属性招式击中时特攻提升1级",
+        trigger:"damageTaken",
+        effect:function(attacker,defender,damage,move){
+            if(move.type==="电"){
+                applyStatChange('self','specialAttack',1);
+                return `${defender.name}的避雷针特性提升了特攻！`;
+    }            return null;
+        }
+    },
+    "电气引擎":{
+        description:"受到电属性招式攻击时不会损失HP，并且速度提升1级",
+        trigger:"damageTaken",
+        effect:function(attacker,defender,damage,move){
+            if(move.type==="电"){
+                applyStatChange('self','speed',1);
+                return `${defender.name}的电气引擎特性使其免疫了电属性招式的伤害，并提升了速度！`;
+    }
+            return null;
+        }
+    },
+    "柔软":{
+        description:"不会被麻痹",
+        trigger:"statusApplied",
+        effect:function(status,pokemon){
+            if(status==="paralysis"){
+                return { preventStatus: true };
+    }
+            return null;
+        }
+    },
+    "花幕":{
+        description:"我方草属性宝可梦不会被降低能力和陷入异常状态",
+        trigger: "statChangeAttempt",
+        effect: function(stat, change, pokemon) {
+            if (pokemon.types.includes("草") && change < 0) {
+                return { preventChange: true };
+    }
+            return null;
+        }
+    },
+    "湿润之声":{
+        description:"使用声音类技能时，技能的属性变为水属性",
+        trigger:"moveType",
+        effect:function(move,pokemon){
+            const soundMoves=["诱惑之声","吵闹","叫声","精神噪音","打鼾","终焉之歌","密语","轮唱","回声","巨声"];
+            if(soundMoves.includes(move.name)){
+                return { newType:"水" };
+    }
+            return null;
+        }
+    },
+    "甜幕":{
+        description:"我方妖精属性宝可梦不会被降低能力和陷入异常状态",
+        trigger: "statChangeAttempt",
+        effect: function(stat, change, pokemon) {
+            if (pokemon.types.includes("妖精") && change < 0) {
+                return { preventChange: true };
+    }
+            return null;
+        }
+    },
+    "速击":{
+        description:"先制招式的优先级提升1",
+        trigger:"priorityCheck",
+        effect:function(move,pokemon){
+            if(move.priority>0){
+                return { priorityBonus:1 };
+    }
+            return null;
+        }
+    },
+    "干燥皮肤":{
+        description:"下雨天气时和受到水属性的招式时，ＨＰ会回复。晴朗天气时和受到火属性的招式时，ＨＰ会减少。",
+        trigger:"turnStart",
+        effect:function(pokemon,battleState){
+            if(battleState.weather){
+                if(battleState.weather.type==="rain"){
+                    const healAmount=Math.floor(pokemon.maxHP/16);
+                    pokemon.currentHP=Math.min(pokemon.maxHP,pokemon.currentHP+healAmount);
+                    return `${pokemon.name}的干燥皮肤特性回复了HP！`;
+                }else if(battleState.weather.type==="sun"){
+                    const damageAmount=Math.floor(pokemon.maxHP/8);
+                    pokemon.currentHP=Math.max(0,pokemon.currentHP-damageAmount);
+                    return `${pokemon.name}的干燥皮肤特性受到了伤害！`;
+
+    }
+            }
+            return null;
+        }
+    },
+    "饱了又饿":{
+        description:"莫鲁贝可每回合会在电属性和黑暗属性间切换",
+        trigger:"turnStart",
+        effect:function(pokemon,battleState){
+            if(pokemon.element==="电"){
+                pokemon.element="黑暗";
+                return `${pokemon.name}变成了黑暗属性！`;
+            }else if(pokemon.element==="黑暗"){
+                pokemon.element="电";
+                return `${pokemon.name}变成了电属性！`;
+            
+    }
+            return null;
+        }
+    },
+    "危险回避":{
+        description:"ＨＰ变为一半时，为了回避危险，会退回到同行队伍中",
+        trigger:"hpLow",
+        threshold:0.5,
+        effect:function(pokemon,battleState){
+            if(pokemon.currentHP<=pokemon.maxHP*this.threshold){
+                pokemon.currentHP=pokemon.maxHP;
+                battleState.removeFromBattle(pokemon);
+                return `${pokemon.name}的危险回避特性使其退回了队伍中！`;
+    }
+            return null;
+        }
+    },
+    "湿气":{
+        description:"能够阻止使用自爆等爆炸类招式的效果",
+        trigger:"moveUsed",
+        effect:function(attacker,defender,move){
+            const explosiveMoves=["自爆","大爆炸","玉石俱碎","薄雾爆炸","惊爆大头","惊头爆炸"];
+            if(explosiveMoves.includes(move.name)){
+                return { preventEffect:true };
+    }
+            return null;
+        }
+    },
+    "不仁不义":{
+        description:"面对陷入中毒或剧毒状态的对手，容易击中要害",
+        trigger:"moveUsed",
+        effect:function(attacker,defender,move){
+            if(defender.status==="poison"||defender.status==="badly-poisoned"){
+                return { critBoost:true };
+    }
+            return null;
+        }
+    },
+    "硬壳盔甲":{
+        description:"绝对不会被暴击",
+        trigger:"critCheck",
+        effect:function(move,attacker,defender){
+            return { preventCrit:true };
+        }
+    },
+    "自然回复":{
+        description:"退回到同行队伍时，治愈所有异常状态",
+        trigger:"onExit",
+        effect:function(pokemon,battleState){
+            if(pokemon.status!=='none'){
+                const oldStatus=pokemon.status;
+                pokemon.status='none';
+                return `${pokemon.name}的自然回复特性治愈了${statusEffects[oldStatus].name}！`;
+    }
+            return null;
+        }
+    },
+    "魔法防守":{
+        description:"不会受到天气、道具、特性、异常状态、状态变化、除挣扎之外的反作用力伤害的招式等造成的伤害。",
+        trigger:"damageCalculation",
+        effect:function(move,attacker,defender,damage){
+            const nonDirectDamageMoves=["天气伤害","道具伤害","特性伤害","异常状态伤害","状态变化伤害"];
+            if(nonDirectDamageMoves.includes(move.name)){
+                return { damage:0 };
+    }
+            return null;
+        }
+    },
+    "超幸运":{
+        description:"使用招式时，会更击中要害",
+        trigger:"critCheck",
+        effect:function(move,attacker,defender){
+            return { critBoost:true };
+        }
+    },
+    "引火":{
+        description:"受到火属性招式攻击时不会损失HP，并且攻击提升1级",
+        trigger:"damageTaken",
+        effect:function(attacker,defender,damage,move){
+            if(move.type==="火"){
+                applyStatChange('self','Attack',1);
+                return `${defender.name}的引火特性使其免疫了火属性招式的伤害，并提升了攻击！`;
+    }
+            return null;
+        }
+    },
+    "熔岩铠甲":{
+        description:"不会陷入冰冻状态",
+        trigger:"statusApplied",
+        effect:function(status,pokemon){
+            if(status==="freeze"){
+                return { preventStatus: true };
+    }
+            return null;
+        }
+    },
+    "毅力":{
+        descriptiom:"当拥有毅力特性的宝可梦处于异常状态（如中毒、灼伤等）时，攻击力会提高50%，并且攻击效果不会受到灼伤的影响",
+        trigger:"statusApplied",
+        effect:function(status,pokemon){
+            if(status!=="none"){
+                return { attackBoost:1.5, ignoreBurnAttackReduction:true };
+    }            return null;
+        }
+    },
+    "水幕":{
+        description:"不会陷入灼伤状态",
+        trigger:"statusApplied",
+        effect:function(status,pokemon){
+            if(status==="burn"){
+                return { preventStatus: true };
+    }
+            return null;
+        }
+    },
+    "孢子":{
+        description:"受到对手接触类招式时，有概率是对手麻痹睡眠或中毒",
+        trigger:"contactDamage",
+        chance:0.3,
+        effect:function(attacker,defender,battleState){
+            const statuses=["paralysis","sleep","poison"];
+            const randomStatus=statuses[Math.floor(Math.random()*statuses.length)];
+            if(Math.random()<this.chance&&attacker.status==='none'){
+                attacker.status=randomStatus;
+                return `${defender.name}的孢子特性使${attacker.name}${statusEffects[randomStatus].name}了！`;
+    }
+            return null;
+        }
+    },
+    "风力发电":{
+        description:"受到风的招式攻击时，会变为充电状态。",
+        trigger:"damageTaken",
+        effect:function(attacker,defender,damage,move){
+            const windMoves=["龙卷风","暴风","空气斩","风暴突袭","风之力"];
+            if(windMoves.includes(move.name)){
+                defender.isCharging=true;
+                return `${defender.name}的风力发电特性使其进入了充电状态！`;
+    }
+            return null;
+        }
+    },
+    "电力转换":{
+        description:"受到电属性招式攻击时，会变为充电状态。",
+        trigger:"damageTaken",
+        effect:function(attacker,defender,damage,move){
+            if(move.type==="电"){
+                defender.isCharging=true;
+                return `${defender.name}的电力转换特性使其进入了充电状态！`;
+    }
+            return null;
+        }
+    },
+    "活力":{
+        description:"每次招式威力提升，但是招式的命中率降低",
+        trigger:"movePower",
+        effect:function(move,pokemon){
+            return { powerMultiplier:1.2, accuracyReduction:0.9 };
+    }
+    },
+    "不屈之心":{
+        description:"宝可梦处于畏缩状态时，其速度会提升1级",
+        trigger:"statusApplied",
+        effect:function(status,pokemon){
+            if(status==="flinch"){
+                applyStatChange('self','speed',1);
+                return `${pokemon.name}的不屈之心特性提升了速度！`;
+    }
+            return null;
+        }
+    },
+    "神奇鳞片":{
+        description:"异常状态时防御上升为原来1.5倍",
+        trigger:"statusApplied",
+        effect:function(status,pokemon){
+            if(status!=="none"){
+                return { defenseBoost:1.5 };
+    }
+            return null;
+        }
+    },
+    "沙隐":{
+        description:"沙暴天气时，闪避率提升1级，并且不会受到沙暴伤害",
+        trigger:"turnStart",
+        effect:function(pokemon,battleState){
+            if(battleState.weather&&battleState.weather.type==="sandstorm"){
+                applyStatChange('self','evasion',1);
+                return `${pokemon.name}的沙隐特性提升了闪避率！`;
+    }
+        
+            return null;
+        }
+    },
+    "唱反调":{
+        description:"对手使用变化类招式时，会使其效果反转",
+        trigger:"statusMoveUsed",
+        effect:function(move,attacker,defender){
+            if(move.category==="变化"){
+                const statChanges=move.statChanges;
+                const reversedChanges={};
+                for(const stat in statChanges){
+                    reversedChanges[stat]=-statChanges[stat];
+                }
+                applyStatChanges('opponent',reversedChanges);
+                return `${defender.name}的唱反调特性使${attacker.name}的${move.name}效果反转了！`;
+    }
+            return null;
+        }
+    },
+    "坚硬":{
+        description:"当HP满时受到致命招式攻击不会被击倒，且HP会降至1",
+        trigger:"damageTaken",
+        effect:function(attacker,defender,damage,move){
+            if(defender.currentHP===defender.maxHP&&damage>=defender.currentHP){
+                defender.currentHP=1;
+                return `${defender.name}的坚硬特性使其幸免于难，HP降至1！`;
+    }
+            return null;
+        }
+    },
+    "天恩":{
+        description:"招式的追加效果容易出现",
+        trigger:"moveEffect",
+        effect:function(move,attacker,defender){
+            if(move.effectType!==MoveEffectTypes.NONE){
+                return { increaseEffectChance:true };
+    }
+            return null;
+        }
+    },
+    "预知梦":{
+        description:"出场时，只读取１个对手拥有的招式",
+        trigger:"onEntry",
+        effect:function(pokemon,target,battleState){
+            if(target&&target.currentHP>0){
+                const moveIndex=Math.floor(Math.random()*target.moves.length);
+                pokemon.predictedMove=target.moves[moveIndex];
+                return `${pokemon.name}的预知梦特性预测了${target.name}的招式！`;
+    }
+            return null;
+        }
+    },
+    "踩影":{
+        description:"使对手宝可梦无法替换下场",
+        trigger:"moveUsed",
+        effect:function(attacker,defender,move){
+            defender.cannotSwitch=true;
+            return `${attacker.name}的踩影特性使${defender.name}无法替换下场！`;
+    }
+    },
+    "雪隐":{
+        description:"冰雹天气时，闪避率提升1级，并且不会受到冰雹伤害",
+        trigger:"turnStart",
+        effect:function(pokemon,battleState){
+            if(battleState.weather&&battleState.weather.type==="hail"){
+                applyStatChange('self','evasion',1);
+                return `${pokemon.name}的雪隐特性提升了闪避率！`;
+    }
+        
+            return null;
+        }
+    },
+    "梦魇":{
+        descriprion:"对陷入睡眠状态的对手，每回合损失最大HP的1/8",
+        trigger:"turnEnd",
+        effect:function(pokemon,target,battleState){
+            if(target&&target.status==="sleep"){
+                const damageAmount=Math.floor(target.maxHP/8);
+                target.currentHP=Math.max(0,target.currentHP-damageAmount);
+                return `${pokemon.name}的梦魇特性使${target.name}损失了HP！`;
+    }
+            return null;
+        }
+    },
+    "食梦":{
+        description:"当对手陷入睡眠状态时，回复最大HP的1/8",
+        trigger:"turnEnd",
+        effect:function(pokemon,target,battleState){
+            if(target&&target.status==="sleep"){
+                const healAmount=Math.floor(pokemon.maxHP/8);
+                pokemon.currentHP=Math.min(pokemon.maxHP,pokemon.currentHP+healAmount);
+                return `${pokemon.name}的食梦特性回复了HP！`;
+    }
+            return null;
+        }
+    },
+    "自由者":{
+        description:"在使用招式前将自身属性变为所使用招式的属性",
+        trigger:"moveUsed",
+        effect:function(move,pokemon,defender){
+            pokemon.types=[move.type];
+            return `${pokemon.name}的自由者特性使其属性变为了${move.type}属性！`;
+    }
+    },
+    "变换自如":{
+        description:"出场时属性会变成第一次使用招式的属性",
+        trigger:"onEntry",
+        effect:function(pokemon,target,battleState){
+            if(target&&target.currentHP>0){
+                const firstMove=target.moves[0];
+                pokemon.types=[firstMove.type];
+                return `${pokemon.name}的变换自如特性使其属性变为了${firstMove.type}属性！`;
+    }
+            return null;
+        }
+    },
+
+    "无防守": {
+        description: "无法被降低能力",
+        trigger: "statChangeAttempt",
+        effect: function(stat, change, pokemon) {
+            if (change < 0) {
+                return { preventChange: true };
+            }
+            return null;
+        }
+    }
+};
+
+// 特性触发器类型
+const AbilityTriggers = {
+    ON_ENTRY: "onEntry",        // 出场时
+    ON_EXIT: "onExit",          // 退场时  
+    TURN_START: "turnStart",    // 回合开始
+    TURN_END: "turnEnd",        // 回合结束
+    MOVE_USED: "moveUsed",      // 使用招式时
+    DAMAGE_TAKEN: "damageTaken", // 受到伤害时
+    CONTACT_DAMAGE: "contactDamage", // 接触伤害时
+    STATUS_APPLIED: "statusApplied", // 状态附加时
+    FAINT: "faint"              // 濒死时
+};
+
+// 招式效果类型分类
+const MoveEffectTypes = {
+    NONE: 0,        // 无附加效果
+    STAT_UP: 1,     // 能力提升
+    STAT_DOWN: -1,  // 能力降低
+    SPECIAL: 2      // 特殊效果（天气、状态、场地等）
+};
+
+// 招式数据库
+const MovesDatabase = {
+    // 能力提升类招式 (effectType: 1)
+    "剑舞": {
+        type: "一般",
+        category: "变化",
+        accuracy: 100,
+        power: 0,
+        effectType: MoveEffectTypes.STAT_UP,
+        description: "激烈地跳起战舞提高气势，大幅提高自己的攻击",
+        statChanges: { attack: 2 },
+        target: "self"
+    },
+    "龙之舞": {
+        type: "龙",
+        category: "变化",
+        accuracy: 100,
+        power: 0,
+        effectType: MoveEffectTypes.STAT_UP,
+        description: "激烈地跳起神秘且强有力的舞蹈，提高自己的攻击和速度",
+        statChanges: { attack: 1, speed: 1 },
+        target: "self"
+    },
+    "冥想": {
+        type: "超能力",
+        category: "变化",
+        accuracy: 100,
+        power: 0,
+        effectType: MoveEffectTypes.STAT_UP,
+        description: "静心凝神，提高自己的特攻和特防",
+        statChanges: { specialAttack: 1, specialDefense: 1 },
+        target: "self"
+    },
+    "铁壁": {
+        type: "钢",
+        category: "变化",
+        accuracy: 100,
+        power: 0,
+        effectType: MoveEffectTypes.STAT_UP,
+        description: "用铁一般的意志守护自己，大幅提高自己的防御",
+        statChanges: { defense: 2 },
+        target: "self"
+    },
+    "高速移动": {
+        type: "超能力",
+        category: "变化",
+        accuracy: 100,
+        power: 0,
+        effectType: MoveEffectTypes.STAT_UP,
+        description: "提升身体的敏捷性，提高自己的速度",
+        statChanges: { speed: 1 },
+        target: "self"
+    },
+    "影子分身": {
+        type: "一般",
+        category: "变化",
+        accuracy: 100,
+        power: 0,
+        effectType: MoveEffectTypes.STAT_UP,
+        description: "提高自己的闪避率",
+        statChanges: { evasion : 1 },
+        target: "self"
+    },
+
+    // 能力降低类招式 (effectType: -1)
+    "叫声": {
+        type: "一般",
+        category: "变化",
+        accuracy: 100,
+        power: 0,
+        effectType: MoveEffectTypes.STAT_DOWN,
+        description: "让对手听可爱的叫声，引开注意力使其疏忽，从而降低对手的攻击",
+        statChanges: { attack: -1 },
+        target: "opponent"
+    },
+    "鬼面": {
+        type: "一般",
+        category: "变化",
+        accuracy: 100,
+        power: 0,
+        effectType: MoveEffectTypes.STAT_DOWN,
+        description: "用恐怖的脸瞪着对手，使其害怕，从而大幅降低对手的速度",
+        statChanges: { speed: -2 },
+        target: "opponent"
+    },
+    "金属音": {
+        type: "钢",
+        category: "变化",
+        accuracy: 85,
+        power: 0,
+        effectType: MoveEffectTypes.STAT_DOWN,
+        description: "发出刺耳的金属音，大幅降低对手的特防",
+        statChanges: { specialDefense: -2 },
+        target: "opponent"
+    },
+
+    // 特殊效果类招式 (effectType: 2)
+    "大晴天": {
+        type: "火",
+        category: "变化",
+        accuracy: 100,
+        power: 0,
+        effectType: MoveEffectTypes.SPECIAL,
+        description: "在5回合内，日照变得强烈，火属性招式的威力增强，水属性招式的威力减弱",
+        weather: "sunny",
+        turns: 5,
+        target: "field"
+    },
+    "催眠粉": {
+        type: "草",
+        category: "变化",
+        accuracy: 75,
+        power: 0,
+        effectType: MoveEffectTypes.SPECIAL,
+        description: "撒出催眠粉，让对手陷入睡眠状态",
+        status: "sleep",
+        target: "opponent"
+    },
+    "寄生种子": {
+        type: "草",
+        category: "变化",
+        accuracy: 90,
+        power: 0,
+        effectType: MoveEffectTypes.SPECIAL,
+        description: "在对手身上种下种子，每回合吸取对手的HP来回复自己的HP",
+        drain: 0.125, // 每回合吸取1/8HP
+        target: "opponent"
+    },
+    "青草场地": {
+        type: "草",
+        category: "变化",
+        accuracy: 100,
+        power: 0,
+        effectType: MoveEffectTypes.SPECIAL,
+        description: "在5回合内，地面变成青草场地，草属性招式的威力提高，宝可梦每回合会回复少量HP",
+        terrain: "grassy",
+        turns: 5,
+        target: "field"
+    },
+
+    // 无附加效果类招式 (effectType: 0)
+    "飞叶快刀": {
+        type: "草",
+        category: "物理",
+        accuracy: 95,
+        power: 55,
+        effectType: MoveEffectTypes.NONE,
+        description: "飞出叶片切斩对手进行攻击，容易击中要害",
+        target: "opponent"
+    },
+    "喷射火焰": {
+        type: "火",
+        category: "特殊",
+        accuracy: 100,
+        power: 90,
+        effectType: MoveEffectTypes.NONE,
+        description: "向对手发射烈焰进行攻击",
+        target: "opponent"
+    }
+};
+
+// 招式效果处理器
+const MoveEffectHandler = {
+    // 处理能力变化招式
+    handleStatChange(move, user, target) {
+        if (move.effectType === MoveEffectTypes.STAT_UP || 
+            move.effectType === MoveEffectTypes.STAT_DOWN) {
+            
+            const targetSide = move.target === "self" ? user : target;
+            Object.entries(move.statChanges).forEach(([stat, change]) => {
+                this.applyStatChange(targetSide, stat, change);
+            });
+        }
+    },
+    
+    // 处理天气类招式
+    handleWeather(move, battleState) {
+        if (move.weather) {
+            battleState.weather = {
+                type: move.weather,
+                turns: move.turns || 5
+            };
+        }
+    },
+    
+    // 处理状态类招式
+    handleStatus(move, target) {
+        if (move.status) {
+            if (this.canApplyStatus(target, move.status)) {
+                target.status = move.status;
+            }
+        }
+    },
+    
+    // 应用能力变化
+    applyStatChange(pokemon, stat, change) {
+        // 这里实现能力变化逻辑
+        const statName = this.getStatFieldName(stat);
+        if (statName && pokemon.statStages) {
+            pokemon.statStages[statName] = Math.max(-6, 
+                Math.min(6, (pokemon.statStages[statName] || 0) + change));
+        }
+    },
+    
+    // 工具方法
+    getStatFieldName(stat) {
+        const mapping = {
+            'attack': 'atk',
+            'defense': 'def', 
+            'specialAttack': 'spa',
+            'specialDefense': 'spd',
+            'speed': 'spe'
+        };
+        return mapping[stat];
+    },
+    
+    canApplyStatus(pokemon, status) {
+        return pokemon.status === 'none' && 
+               !pokemon.ability?.includes('免疫');
+    }
+};
+
+//----------------------------------------------------------数据结构-完-----------------------------------------------------------------------------------------------------------------------------------------------
+
+// 全局状态
+let battleState = {
+    myTeam: [],
+    opponentTeam: [],
+    myBag: { healing: [], pokeballs: [] },
+    opponentBag: { healing: [], pokeballs: [], name: "" },
+    currentPokemon: { my: 0, opponent: 0 },
+    battleLog: [],
+    turn: 0,
+    weather: "none",
+    terrain: "none",
+    fieldConditions: {
+        my: { stealthRock: false, spikes: 0, toxicSpikes: 0, reflect: 0, lightScreen: 0, auroraVeil: 0 },
+        opponent: { stealthRock: false, spikes: 0, toxicSpikes: 0, reflect: 0, lightScreen: 0, auroraVeil: 0 }
+    },
+    statChanges: {
+        my: { atk: 0, def: 0, spAtk: 0, spDef: 0, speed: 0, accuracy: 0, evasion: 0 },
+        opponent: { atk: 0, def: 0, spAtk: 0, spDef: 0, speed: 0, accuracy: 0, evasion: 0 }
+    }
+};
+
+//------------------------------------------------------全局状态-完----------------------------------------------------------------------------------------------------------------------------------------------------
+// 解析道具条目
+function parseItems(line) {
+    const items = [];
+    const itemRegex = /(\d+)\.\[([^,\]]+),(\d+)\]/g;
+    let match;
+    
+    while ((match = itemRegex.exec(line)) !== null) {
+        const name = match[2];
+        const quantity = parseInt(match[3]);
+        items.push({
+            name: name,
+            quantity: quantity,
+            effect: itemEffects[name] || null
+        });
+    }
+    
+    return items;
+}
+
+// 解析宝可梦信息
+// 兼容新旧格式的读取函数
+function parsePokemon(lines, startIndex) {
+    const pokemon = {
+        name: "",
+        types: [],
+        level: 0,
+        stats: { hp: 0, atk: 0, def: 0, spAtk: 0, spDef: 0, speed: 0 },
+        ability: { name: "", effect: null },
+        item: { name: "无", effect: null },
+        maxHP: 0,
+        currentHP: 0,
+        moves: [],
+        status: "none",
+        additionalStatus: "none",
+        gender: "无",
+        endIndex: startIndex,
+        majorStatus: "none", 
+        minorStatuses: [],   
+        statusTurns: 0,      
+        toxicCounter: 1,     
+    };
+    
+    // 解析名称行（例如：##1.皮卡丘##）
+    const nameLine = lines[startIndex].trim();
+    const nameMatch = nameLine.match(/##(\d+)\.([^#]+)##/);
+    if (nameMatch) {
+        pokemon.name = nameMatch[2].trim();
+    }
+    
+    // 解析后续行
+    let i = startIndex + 1;
+    while (i < lines.length) {
+        const line = lines[i].trim();
+        
+        // 检查是否是下一个宝可梦的开始
+        if (line.startsWith("##") && i > startIndex && line.match(/^##\d+\./)) {
+            pokemon.endIndex = i - 1;
+            break;
+        }
+        
+        if (line.startsWith("属性:")) {
+            // 兼容新旧格式：使用/分隔属性
+            const typesText = line.replace("属性:", "").trim();
+            pokemon.types = typesText.split(/[/,]/).map(function(t) { 
+                return t.trim();
+            });
+        } else if (line.startsWith("等级:")) {
+            pokemon.level = parseInt(line.replace("等级:", "")) || 0;
+        } else if (line.startsWith("能力值:")) {
+            const statsText = line.replace("能力值:", "").trim();
+            const stats = statsText.split(",").map(s => parseInt(s.trim()) || 0);
+            if (stats.length >= 6) {
+                pokemon.stats = {
+                    hp: stats[0], atk: stats[1], def: stats[2],
+                    spAtk: stats[3], spDef: stats[4], speed: stats[5]
+                };
+                pokemon.maxHP = stats[0];
+            }
+        } else if (line.startsWith("特性:")) {const abilityName = line.replace("特性:", "").trim();
+        pokemon.ability.name = abilityName;
+        pokemon.ability.effect = AbilityDatabase[abilityName] || null;
+        } else if (line.startsWith("携带道具:")) {
+    const itemInfo = line.replace("携带道具:", "").trim();
+    if (itemInfo !== "无") {
+        // 解析道具名称和效果参数
+        const itemParts = itemInfo.split(',');
+        pokemon.item.name = itemParts[0].trim();
+        pokemon.item.effect = itemEffects[pokemon.item.name] || null;
+        
+        // 解析道具效果参数（如果存在）
+        if (itemParts.length > 1) {
+            pokemon.item.params = {};
+            for (let i = 1; i < itemParts.length; i++) {
+                const param = itemParts[i].trim();
+                if (param.includes(':')) {
+                    const [key, value] = param.split(':').map(p => p.trim());
+                    pokemon.item.params[key] = value;
+                }
+            }
+        }
+    }
+        } else if (line.startsWith("生命值当前/上限:")) {
+            const hpText = line.replace("生命值当前/上限:", "").trim();
+            const hp = hpText.split("/").map(h => parseInt(h.trim()) || 0);
+            if (hp.length >= 2) {
+                pokemon.currentHP = hp[0];
+                pokemon.maxHP = hp[1];
+            }
+        } else if (line.startsWith("招式列表:")) {
+            // 解析接下来的招式
+            for (let j = i + 1; j < lines.length; j++) {
+                const moveLine = lines[j].trim();
+                
+                // 如果遇到下一个宝可梦的开始或空行，停止解析
+                if (moveLine.startsWith("##") || moveLine === "") {
+                    i = j - 1;
+                    break;
+                }
+                
+                // 解析招式行
+                if (moveLine.startsWith("招式")) {
+                    const move = parseMove(moveLine);
+                    if (move.name) {
+                        pokemon.moves.push(move);
+                    }
+                }
+                
+                // 如果到达文件末尾
+                if (j === lines.length - 1) {
+                    i = j;
+                }
+            }
+        }
+        
+        i++;
+        
+        // 如果到达文件末尾
+        if (i >= lines.length) {
+            pokemon.endIndex = lines.length - 1;
+            break;
+        }
+    }
+    
+    return pokemon;
+}
+
+// 解析招式信息
+function parseMove(line) {
+    const move = {
+        name: "",
+        type: "",
+        category: "",
+        accuracy: 100,
+        power: 0,
+        effectType: 0, // 新格式的效果类型
+        effect: null
+    };
+    
+    // 移除"招式X."前缀，提取招式名称和参数
+    const match = line.match(/招式\d+\.([^,]+)(.*)/);
+    if (match) {
+        move.name = match[1].trim();
+        // 去掉前导逗号后再切分参数
+        const params = match[2].replace(/^,/, "").split(",");
+        
+        // 解析招式参数
+        if (params.length >= 1) move.type = params[0].trim();
+        if (params.length >= 2) move.category = params[1].trim();
+        if (params.length >= 3) move.accuracy = parseInt(params[2].trim()) || 100;
+        if (params.length >= 4) move.power = parseInt(params[3].trim()) || 0;
+        
+        // 兼容新旧格式：处理效果类型
+        if (params.length >= 5) {
+            const effectField = params[4].trim();
+            
+            // 尝试解析为数字（新格式）
+            const effectNum = parseInt(effectField);
+            if (!isNaN(effectNum)) {
+                move.effectType = effectNum;
+            } else {
+                // 旧格式：根据"是"/"否"转换为数字
+                if (effectField === "是") {
+                    move.effectType = 2; // 特殊效果
+                } else if (effectField === "否") {
+                    move.effectType = 0; // 无效果
+                }
+                // 忽略旧格式的其他字段
+            }
+        }
+        
+        // 如果有更多字段，忽略它们（旧格式的额外字段）
+    }
+    
+    return move;
+}
+
+
+// 解析导入的数据 - 增强兼容性
+function parseImportData(data) {
+    const lines = data.split(/\r?\n/).map(l => l.replace(/\r/, ''));
+
+    // 重置战斗状态
+    battleState.myTeam = [];
+    battleState.opponentTeam = [];
+    battleState.myBag = { healing: [], pokeballs: [] };
+    battleState.opponentBag = { healing: [], pokeballs: [], name: "" };
+    battleState.currentPokemon = { my: 0, opponent: 0 };
+
+    function findLineIndex(matchText, start = 0) {
+        for (let i = start; i < lines.length; i++) {
+            if (lines[i].trim() === matchText) return i;
+        }
+        return -1;
+    }
+
+    function collectUntil(nextChecks, fromIndex) {
+        let j = fromIndex;
+        let buffer = '';
+        while (j < lines.length) {
+            const t = lines[j].trim();
+            if (t === '') { j++; continue; }
+            // 如果命中任何下一个区块标识则停止
+            if (nextChecks.some(fn => fn(t))) break;
+            buffer += (buffer ? '\n' : '') + lines[j];
+            j++;
+        }
+        return { text: buffer, endIndex: j };
+    }
+
+    // 解析我的背包
+    const myBagIdx = findLineIndex('#我的背包#');
+    if (myBagIdx >= 0) {
+        const healIdx = findLineIndex('##回复道具:##', myBagIdx);
+        if (healIdx >= 0) {
+            const collected = collectUntil([
+                t => t.startsWith('##'),
+                t => t.startsWith('#')
+            ], healIdx + 1);
+            const items = parseItems(collected.text);
+            battleState.myBag.healing = items;
+        }
+
+        const ballIdx = findLineIndex('##精灵球:##', myBagIdx);
+        if (ballIdx >= 0) {
+            const collected = collectUntil([
+                t => t.startsWith('##'),
+                t => t.startsWith('#')
+            ], ballIdx + 1);
+            const items = parseItems(collected.text);
+            battleState.myBag.pokeballs = items;
+        }
+    }
+
+    // 解析对手的背包
+    const oppBagIdx = findLineIndex('#对手的背包#');
+    if (oppBagIdx >= 0) {
+        // 如果下一行形如 ##名字## 则记录为训练家名字
+        if (oppBagIdx + 1 < lines.length) {
+            const candidate = lines[oppBagIdx + 1].trim();
+            const m = candidate.match(/^##([^#]+)##$/);
+            if (m) {
+                battleState.opponentBag.name = m[1].trim();
+            }
+        }
+
+        const healIdx = findLineIndex('##回复道具:##', oppBagIdx);
+        if (healIdx >= 0) {
+            const collected = collectUntil([
+                t => t.startsWith('##'),
+                t => t.startsWith('#')
+            ], healIdx + 1);
+            const items = parseItems(collected.text);
+            battleState.opponentBag.healing = items;
+        }
+
+        const ballIdx = findLineIndex('##精灵球:##', oppBagIdx);
+        if (ballIdx >= 0) {
+            const collected = collectUntil([
+                t => t.startsWith('##'),
+                t => t.startsWith('#')
+            ], ballIdx + 1);
+            const items = parseItems(collected.text);
+            battleState.opponentBag.pokeballs = items;
+        }
+    }
+
+    // 解析我方和对方宝可梦阵容
+    const myTeamIdx = findLineIndex('#我方宝可梦阵容#');
+    const oppTeamIdx = findLineIndex('#对方宝可梦阵容#');
+
+    function parseTeam(startIdx, endCheck) {
+        const team = [];
+        if (startIdx < 0) return team;
+        let i = startIdx + 1;
+        while (i < lines.length) {
+            const line = lines[i].trim();
+            if (line === '') { i++; continue; }
+            if (endCheck && endCheck(line)) break;
+            if (/^##\d+\./.test(line)) {
+                const p = parsePokemon(lines, i);
+                team.push(p);
+                i = p.endIndex + 1;
+                continue;
+            }
+            i++;
+        }
+        return team;
+    }
+
+    battleState.myTeam = parseTeam(myTeamIdx, t => t === '#对方宝可梦阵容#' || t.startsWith('#') && t !== '#我方宝可梦阵容#');
+    battleState.opponentTeam = parseTeam(oppTeamIdx, t => t.startsWith('#') && t !== '#对方宝可梦阵容#');
+
+    // 诊断日志
+    addToLog(`找到索引：我的背包=${myBagIdx}, 对手背包=${oppBagIdx}, 我方阵容=${myTeamIdx}, 对方阵容=${oppTeamIdx}`);
+    addToLog(`导入道具：我方恢复=${battleState.myBag.healing.length} 精灵球=${battleState.myBag.pokeballs.length}；对方恢复=${battleState.opponentBag.healing.length} 精灵球=${battleState.opponentBag.pokeballs.length}`);
+    addToLog(`解析结果：我方宝可梦=${battleState.myTeam.length}，对方宝可梦=${battleState.opponentTeam.length}`);
+
+    // 如果未解析到宝可梦，尝试回退解析
+    if (battleState.myTeam.length === 0 && battleState.opponentTeam.length === 0) {
+        addToLog('回退解析：未在预期区块找到宝可梦，开始全局扫描标题...');
+        const allPokemons = [];
+        for (let i = 0; i < lines.length; i++) {
+            const t = lines[i].trim();
+            if (/^##\d+\./.test(t)) {
+                const p = parsePokemon(lines, i);
+                allPokemons.push({ p, start: i });
+                i = p.endIndex;
+            }
+        }
+
+        if (allPokemons.length > 0) {
+            allPokemons.forEach(entry => {
+                const idx = entry.start;
+                if (myTeamIdx >= 0 && oppTeamIdx >= 0) {
+                    if (idx > myTeamIdx && idx < oppTeamIdx) battleState.myTeam.push(entry.p);
+                    else if (idx > oppTeamIdx) battleState.opponentTeam.push(entry.p);
+                } else if (myTeamIdx >= 0) {
+                    if (idx > myTeamIdx) battleState.myTeam.push(entry.p);
+                } else if (oppTeamIdx >= 0) {
+                    if (idx > oppTeamIdx) battleState.opponentTeam.push(entry.p);
+                } else {
+                    // 没有标记区块，按顺序分配
+                    const half = Math.ceil(allPokemons.length / 2);
+                    const pos = allPokemons.indexOf(entry);
+                    if (pos < half) battleState.myTeam.push(entry.p);
+                    else battleState.opponentTeam.push(entry.p);
+                }
+            });
+
+            addToLog(`回退解析完成：总计扫描到 ${allPokemons.length} 个宝可梦，分配后我方=${battleState.myTeam.length}，对方=${battleState.opponentTeam.length}`);
+        } else {
+            addToLog('回退解析未发现任何宝可梦标题。请确认导入文本格式。');
+        }
+    }
+
+    // 初始化当前宝可梦索引
+    battleState.currentPokemon = { my: 0, opponent: 0 };
+
+    updateUI();
+    addToLog('导入完成：已加载我方和对方数据。');
+    if (battleState.myTeam.length > 0 && battleState.opponentTeam.length > 0) {
+        initBattle();
+    } else {
+        addToLog("导入完成，但宝可梦数据不完整，无法开始对战。");
+    }
+}
+
+//---------------------------------------------------------数据解析-完------------------------------------------------------
+function initBattle() {
+    // 检查是否有宝可梦数据
+    if (battleState.myTeam.length === 0 || battleState.opponentTeam.length === 0) {
+        addToLog("错误：没有宝可梦数据，无法开始对战！");
+        return false;
+    }
+    
+    // 重置对战状态
+    battleState.turn = 1;
+    battleState.battleLog = [];
+    battleState.currentPokemon = { my: 0, opponent: 0 };
+    
+    // 重置能力变化
+    battleState.statChanges = {
+        my: { atk: 0, def: 0, spAtk: 0, spDef: 0, speed: 0, accuracy: 0, evasion: 0 },
+        opponent: { atk: 0, def: 0, spAtk: 0, spDef: 0, speed: 0, accuracy: 0, evasion: 0 }
+    };
+    
+    // 重置场地状态
+    battleState.weather = "none";
+    battleState.terrain = "none";
+    battleState.fieldConditions = {
+        my: { stealthRock: false, spikes: 0, toxicSpikes: 0, reflect: 0, lightScreen: 0, auroraVeil: 0 },
+        opponent: { stealthRock: false, spikes: 0, toxicSpikes: 0, reflect: 0, lightScreen: 0, auroraVeil: 0 }
+    };
+    
+    // 确保当前宝可梦索引有效
+    if (battleState.currentPokemon.my >= battleState.myTeam.length) {
+        battleState.currentPokemon.my = 0;
+    }
+    if (battleState.currentPokemon.opponent >= battleState.opponentTeam.length) {
+        battleState.currentPokemon.opponent = 0;
+    }
+    
+    // 检查当前宝可梦是否濒死，如果是则切换到第一个可用的宝可梦
+    if (battleState.myTeam[battleState.currentPokemon.my].currentHP <= 0) {
+        for (let i = 0; i < battleState.myTeam.length; i++) {
+            if (battleState.myTeam[i].currentHP > 0) {
+                battleState.currentPokemon.my = i;
+                break;
+            }
+        }
+    }
+    
+    if (battleState.opponentTeam[battleState.currentPokemon.opponent].currentHP <= 0) {
+        for (let i = 0; i < battleState.opponentTeam.length; i++) {
+            if (battleState.opponentTeam[i].currentHP > 0) {
+                battleState.currentPokemon.opponent = i;
+                break;
+            }
+        }
+    }
+    
+    // 启用所有操作按钮
+    document.querySelectorAll('.move-option, .pokemon-option, .item-option, #flee-btn').forEach(button => {
+        button.disabled = false;
+        button.style.opacity = '1';
+    });
+    
+    // 更新UI
+    updateUI();
+    
+    // 添加对战开始信息
+    const myPokemon = battleState.myTeam[battleState.currentPokemon.my];
+    const opponentPokemon = battleState.opponentTeam[battleState.currentPokemon.opponent];
+    const trainerName = battleState.opponentBag.name || "对方";
+    
+    addToLog(`对战开始！`);
+    addToLog(`你派出了${myPokemon.name}！`);
+    addToLog(`${trainerName}派出了${opponentPokemon.name}！`);
+    
+    // 检查场地状态效果
+    applyFieldConditions();
+    
+    return true;
+}
+
+// 安全的 JSON 解析函数
+function safeJSONParse(str, defaultValue = {}) {
+    try {
+        if (!str || str === 'undefined' || str === 'null') {
+            return defaultValue;
+        }
+        return JSON.parse(str);
+    } catch (error) {
+        console.error('JSON 解析错误:', error);
+        return defaultValue;
+    }
+}
+//使用oldPokemon.statChanges = safeJSONParse(JSON.stringify(battleState.statChanges.opponent));
+
+// 更新HP条（图形辅助）
+function updateHPBar(side, currentHP, maxHP, immediate = false) {
+    // 安全化数值
+    currentHP = Number(currentHP) || 0;
+    maxHP = Number(maxHP) || 1;
+    const percentage = Math.max(0, Math.min(100, Math.round((currentHP / maxHP) * 100)));
+    
+    // 颜色分级
+    let color = '#2ecc71'; // 绿色
+    if (percentage <= 20) color = '#e74c3c';
+    else if (percentage <= 50) color = '#f1c40f';
+    
+    // 获取HP状态容器
+    const hpStatus = document.getElementById(`${side}-hp`).parentNode;
+    
+    // 检查是否已存在HP条容器
+    let container = hpStatus.querySelector('.hp-bar-container');
+    let fillEl, labelEl;
+    
+    if (!container) {
+        // 创建HP条容器
+        container = document.createElement('div');
+        container.className = 'hp-bar-container';
+        
+        // 创建HP填充条
+        fillEl = document.createElement('div');
+        fillEl.className = 'hp-bar';
+        
+        // 创建HP文本
+        labelEl = document.createElement('span');
+        labelEl.className = 'hp-text';
+        
+        container.appendChild(fillEl);
+        container.appendChild(labelEl);
+        hpStatus.appendChild(container);
+    } else {
+        // 获取已存在的元素
+        fillEl = container.querySelector('.hp-bar');
+        labelEl = container.querySelector('.hp-text');
+    }
+    
+    // 更新HP条
+    if (fillEl) {
+        // 设置过渡效果
+        if (immediate) {
+            fillEl.style.transition = 'none';
+        } else {
+            fillEl.style.transition = 'width 0.4s ease';
+        }
+        
+        // 更新HP条宽度和颜色
+        fillEl.style.width = `${percentage}%`;
+        fillEl.style.background = color;
+        
+        // 立即更新后恢复过渡效果
+        if (immediate) {
+            requestAnimationFrame(() => {
+                fillEl.style.transition = 'width 0.4s ease';
+            });
+        }
+    }
+    
+    if (labelEl) {
+        labelEl.textContent = `${currentHP}/${maxHP} (${percentage}%)`;
+    }
+}
+
+// 将 battleState 渲染到页面上的统一更新函数
+function updateUI() {
+    // 我方
+    const my = battleState.myTeam[battleState.currentPokemon.my];
+    if (my) {
+        document.getElementById('my-name').textContent = my.name || '-';
+        document.getElementById('my-level').textContent = `Lv.${my.level || 0}`;
+        document.getElementById('my-hp').textContent = `${my.currentHP || 0}/${my.maxHP || 0}`;
+        document.getElementById('my-status').textContent = (my.status && my.status !== 'none') ? my.status : '-';
+        document.getElementById('my-ability').textContent = my.ability || '-';
+        document.getElementById('my-item').textContent = my.item && my.item.name ? my.item.name : '-';
+        updateHPBar('my', my.currentHP || 0, my.maxHP || 1);
+    } else {
+        document.getElementById('my-name').textContent = '-';
+        document.getElementById('my-level').textContent = '-';
+        document.getElementById('my-hp').textContent = '-/-';
+        document.getElementById('my-status').textContent = '-';
+        document.getElementById('my-ability').textContent = '-';
+        document.getElementById('my-item').textContent = '-';
+    }
+
+    // 对方
+    const opp = battleState.opponentTeam[battleState.currentPokemon.opponent];
+    if (opp) {
+        document.getElementById('opponent-name').textContent = opp.name || '-';
+        document.getElementById('opponent-level').textContent = `Lv.${opp.level || 0}`;
+        document.getElementById('opponent-hp').textContent = `${opp.currentHP || 0}/${opp.maxHP || 0}`;
+        document.getElementById('opponent-status').textContent = (opp.status && opp.status !== 'none') ? opp.status : '-';
+        document.getElementById('opponent-ability').textContent = opp.ability || '-';
+        document.getElementById('opponent-item').textContent = opp.item && opp.item.name ? opp.item.name : '-';
+        updateHPBar('opponent', opp.currentHP || 0, opp.maxHP || 1);
+    } else {
+        document.getElementById('opponent-name').textContent = '-';
+        document.getElementById('opponent-level').textContent = '-';
+        document.getElementById('opponent-hp').textContent = '-/-';
+        document.getElementById('opponent-status').textContent = '-';
+        document.getElementById('opponent-ability').textContent = '-';
+        document.getElementById('opponent-item').textContent = '-';
+    }
+
+    // 更新对方标题为训练家名称（如有）
+    const trainerName = battleState.opponentBag && battleState.opponentBag.name ? battleState.opponentBag.name : '';
+    document.getElementById('opponent-title').textContent = trainerName ? `${trainerName}的宝可梦` : '对方宝可梦';
+
+    // 显示特性信息
+    if (my && my.ability) {
+        document.getElementById('my-ability').textContent = 
+            `${my.ability.name}${my.ability.effect ? ` (${my.ability.effect.description})` : ''}`;
+    }
+    
+    if (opp && opp.ability) {
+        document.getElementById('opponent-ability').textContent = 
+            `${opp.ability.name}${opp.ability.effect ? ` (${opp.ability.effect.description})` : ''}`;
+    }
+
+    // 刷新列表和状态显示
+    try {
+        updateMoveList();
+        updatePokemonList();
+        updateItemList();
+        updateStatChangesDisplay();
+    } catch (e) {
+        console.error('updateUI error:', e);
+    }
+}
+
+
+// 更新能力变化显示
+function updateStatChangesDisplay() {
+    const myChanges = battleState.statChanges.my;
+    const opponentChanges = battleState.statChanges.opponent;
+    
+    let myText = '';
+    let opponentText = '';
+    
+    const statNames = { atk: '攻击', def: '防御', spAtk: '特攻', spDef: '特防', speed: '速度', accuracy: '命中', evasion: '闪避' };
+    
+    for (const stat in statNames) {
+        if (myChanges[stat] !== 0) {
+            myText += `${statNames[stat]}:${myChanges[stat] > 0 ? '+' : ''}${myChanges[stat]} `;
+        }
+        if (opponentChanges[stat] !== 0) {
+            opponentText += `${statNames[stat]}:${opponentChanges[stat] > 0 ? '+' : ''}${opponentChanges[stat]} `;
+        }
+    }
+    
+    document.getElementById('my-stats-change').textContent = myText || '无';
+    document.getElementById('opponent-stats-change').textContent = opponentText || '无';
+}
+
+// 更新技能列表
+function updateMoveList() {
+    const moveList = document.getElementById('move-list');
+    moveList.innerHTML = '';
+    
+    const myPokemon = battleState.myTeam[battleState.currentPokemon.my];
+    if (!myPokemon || !myPokemon.moves) return;
+    
+    myPokemon.moves.forEach((move, index) => {
+        const moveElement = document.createElement('div');
+        moveElement.className = 'move-option';
+        
+        // 显示效果类型信息
+        let effectInfo = '';
+        if (move.effectType !== undefined) {
+            const effectTypes = {
+                '0': '无效果',
+                '1': '能力提升',
+                '-1': '能力降低', 
+                '2': '特殊效果'
+            };
+            effectInfo = ` | 效果:${effectTypes[move.effectType] || '未知'}`;
+        }
+        
+        moveElement.innerHTML = `
+            <strong>${move.name}</strong> (${move.type}) 
+            ${move.power > 0 ? `威力:${move.power}` : '变化'} 
+            命中:${move.accuracy}%${effectInfo}
+        `;
+        moveElement.addEventListener('click', () => useMove(index));
+        moveList.appendChild(moveElement);
+    });
+    
+    // 如果没有招式，显示提示
+    if (myPokemon.moves.length === 0) {
+        const noMovesElement = document.createElement('div');
+        noMovesElement.textContent = "没有可用招式";
+        noMovesElement.style.opacity = '0.5';
+        moveList.appendChild(noMovesElement);
+    }
+}
+
+// 更新宝可梦列表
+function updatePokemonList() {
+    const pokemonList = document.getElementById('pokemon-list');
+    pokemonList.innerHTML = '';
+    
+    battleState.myTeam.forEach((pokemon, index) => {
+        const pokemonElement = document.createElement('div');
+        pokemonElement.className = 'pokemon-option';
+        
+        const isFainted = pokemon.currentHP <= 0;
+        const isCurrent = index === battleState.currentPokemon.my;
+        
+        pokemonElement.innerHTML = `
+            ${isCurrent ? '▶ ' : ''}${pokemon.name} Lv.${pokemon.level} 
+            HP:${pokemon.currentHP}/${pokemon.maxHP} 
+            ${isFainted ? '(濒死)' : ''}
+        `;
+        
+        if (!isFainted && !isCurrent) {
+            pokemonElement.addEventListener('click', () => switchPokemon(index));
+        } else {
+            pokemonElement.style.opacity = '0.5';
+            pokemonElement.style.cursor = 'not-allowed';
+        }
+        
+        pokemonList.appendChild(pokemonElement);
+    });
+}
+
+// 更新道具列表显示函数
+function updateItemList() {
+    const healingItems = document.getElementById('healing-items');
+    const pokeballs = document.getElementById('pokeballs');
+    
+    healingItems.innerHTML = '';
+    pokeballs.innerHTML = '';
+    
+    // 恢复道具
+    battleState.myBag.healing.forEach((item, index) => {
+        const itemElement = document.createElement('div');
+        itemElement.className = 'item-option';
+        itemElement.innerHTML = `
+            <strong>${item.name}</strong> x${item.quantity}
+            <br><small>${itemEffects[item.name]?.description || ''}</small>
+        `;
+        itemElement.addEventListener('click', () => useHealingItem(index));
+        healingItems.appendChild(itemElement);
+    });
+    
+    // 精灵球
+    battleState.myBag.pokeballs.forEach((item, index) => {
+        const itemElement = document.createElement('div');
+        itemElement.className = 'item-option';
+        
+        // 显示精灵球的特殊信息
+        let ballInfo = '';
+        const effect = itemEffects[item.name];
+        if (effect) {
+            if (item.name === "大师球") {
+                ballInfo = '<br><small style="color: #e74c3c;">必定捕捉！</small>';
+            } else if (typeof effect.catchRate === 'function') {
+                ballInfo = '<br><small>特殊效果球</small>';
+            } else if (effect.catchRate > 2.0) {
+                ballInfo = `<br><small>高捕捉率: ${effect.catchRate}x</small>`;
+            }
+        }
+        
+        itemElement.innerHTML = `
+            <strong>${item.name}</strong> x${item.quantity}
+            ${ballInfo}
+        `;
+        itemElement.addEventListener('click', () => usePokeball(index));
+        pokeballs.appendChild(itemElement);
+    });
+    
+    // 如果没有道具，显示提示
+    if (battleState.myBag.healing.length === 0) {
+        const noItemsElement = document.createElement('div');
+        noItemsElement.textContent = "没有恢复道具";
+        noItemsElement.style.opacity = '0.5';
+        healingItems.appendChild(noItemsElement);
+    }
+    
+    if (battleState.myBag.pokeballs.length === 0) {
+        const noBallsElement = document.createElement('div');
+        noBallsElement.textContent = "没有精灵球";
+        noBallsElement.style.opacity = '0.5';
+        pokeballs.appendChild(noBallsElement);
+    }
+}
+
+
+//-------------------------------------------------------UI更新函数-完----------------------------------------------------
+// 添加对战记录
+function addToLog(message) {
+    battleState.battleLog.push(`第${battleState.turn}回合: ${message}`);
+    const logContent = document.getElementById('log-content');
+    logContent.innerHTML = battleState.battleLog.join('<br>');
+    logContent.scrollTop = logContent.scrollHeight;
+}
+
+function showPokemonSelection() {
+    const teamList = document.getElementById('my-team');
+    teamList.innerHTML = '';
+    
+    battleState.myTeam.forEach((pokemon, index) => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+            <button class="pokemon-option" onclick="selectReplacement(${index})" 
+                ${pokemon.currentHP <= 0 ? 'disabled' : ''}>
+                <span>${pokemon.name}</span>
+                <span>${pokemon.currentHP}/${pokemon.maxHP} HP</span>
+                <span>Lv.${pokemon.level}</span>
+            </button>
+        `;
+        teamList.appendChild(li);
+    });
+    
+    document.getElementById('team-selection').style.display = 'block';
+}
+
+function selectReplacement(index) {
+    if (index === battleState.currentPokemon.my) {
+        addToLog("这个宝可梦已经在场上了！");
+        return;
+    }
+    
+    const newPokemon = battleState.myTeam[index];
+    if (newPokemon.currentHP <= 0) {
+        addToLog(`${newPokemon.name}已经濒死，无法出战！`);
+        return;
+    }
+    
+    const oldPokemon = battleState.myTeam[battleState.currentPokemon.my];
+    
+    // 保存下场宝可梦的能力变化
+    oldPokemon.statChanges = JSON.parse(JSON.stringify(battleState.statChanges.my));
+    
+    // 切换当前宝可梦索引
+    battleState.currentPokemon.my = index;
+    
+    // 恢复新上场宝可梦的能力变化
+    battleState.statChanges.my = JSON.parse(JSON.stringify(newPokemon.statChanges));
+    
+    addToLog(`去吧！${newPokemon.name}！`);
+    
+    // 隐藏选择界面
+    document.getElementById('team-selection').style.display = 'none';
+    
+    // 回合结束
+    battleState.turn++;
+    updateUI();
+}
+//------------------------------------------辅助函数-完-------------------------------------------------------
+
+// 特性效果处理器
+const AbilityHandler = {
+    // 触发特性效果
+    triggerAbility(triggerType, pokemon, ...args) {
+        if (!pokemon.ability || !pokemon.ability.effect) return null;
+        
+        const ability = pokemon.ability.effect;
+        if (ability.trigger !== triggerType) return null;
+        
+        try {
+            return ability.effect.apply(ability, [pokemon, ...args]);
+        } catch (error) {
+            console.error(`触发特性${pokemon.ability.name}时出错:`, error);
+            return null;
+        }
+    },
+    
+    // 出场特性
+    triggerOnEntry(pokemon, target, battleState) {
+        return this.triggerAbility(AbilityTriggers.ON_ENTRY, pokemon, target, battleState);
+    },
+    
+    // 退场特性  
+    triggerOnExit(pokemon, battleState) {
+        return this.triggerAbility(AbilityTriggers.ON_EXIT, pokemon, battleState);
+    },
+    
+    // 回合开始特性
+    triggerTurnStart(pokemon, battleState) {
+        return this.triggerAbility(AbilityTriggers.TURN_START, pokemon, battleState);
+    },
+    
+    // 回合结束特性
+    triggerTurnEnd(pokemon, battleState) {
+        return this.triggerAbility(AbilityTriggers.TURN_END, pokemon, battleState);
+    },
+    
+    // 招式使用特性
+    triggerMoveUsed(attacker, defender, move) {
+        // 攻击方特性
+        const attackerResult = this.triggerAbility(AbilityTriggers.MOVE_USED, attacker, defender, move);
+        // 防御方特性  
+        const defenderResult = this.triggerAbility(AbilityTriggers.MOVE_USED, defender, attacker, move);
+        
+        return [attackerResult, defenderResult];
+    },
+    
+    // 伤害计算特性
+    modifyDamage(move, attacker, defender, damage) {
+        let modifiedDamage = damage;
+        
+        // 攻击方特性影响
+        const attackerEffect = this.triggerAbility("damageCalculation", attacker, move, defender, damage);
+        if (attackerEffect && attackerEffect.damage !== undefined) {
+            modifiedDamage = attackerEffect.damage;
+        }
+        
+        // 防御方特性影响
+        const defenderEffect = this.triggerAbility("damageCalculation", defender, move, attacker, modifiedDamage);
+        if (defenderEffect && defenderEffect.damage !== undefined) {
+            modifiedDamage = defenderEffect.damage;
+        }
+        
+        return modifiedDamage;
+    },
+    
+    // 接触伤害特性
+    triggerContactDamage(attacker, defender) {
+        return this.triggerAbility(AbilityTriggers.CONTACT_DAMAGE, defender, attacker);
+    }
+};
+
+
+// 应用状态和场地效果
+function applyStatusAndFieldEffects() {
+    
+    // 回合开始特性
+    const myStartResult = AbilityHandler.triggerTurnStart(myPokemon, battleState);
+    const oppStartResult = AbilityHandler.triggerTurnStart(opponentPokemon, battleState);
+    
+    [myStartResult, oppStartResult].forEach(result => {
+        if (result && typeof result === 'string') addToLog(result);
+    });
+
+    // 应用天气效果
+    applyWeatherEffects();
+    
+    // 应用场地效果
+    applyTerrainEffects();
+    
+    // 应用状态效果给双方宝可梦
+    const myPokemon = battleState.myTeam[battleState.currentPokemon.my];
+    const opponentPokemon = battleState.opponentTeam[battleState.currentPokemon.opponent];
+    
+    if (myPokemon && myPokemon.currentHP > 0) {
+        applyStatusEffect(myPokemon, 'my');
+    }
+    
+    if (opponentPokemon && opponentPokemon.currentHP > 0) {
+        applyStatusEffect(opponentPokemon, 'opponent');
+    }
+    
+    // 应用场地状态效果（如隐形岩、撒菱等）
+    applyFieldConditions();
+
+    const myEndResult = AbilityHandler.triggerTurnEnd(myPokemon, battleState);
+    const oppEndResult = AbilityHandler.triggerTurnEnd(opponentPokemon, battleState);
+    [myEndResult, oppEndResult].forEach(result => {
+        if (result && typeof result === 'string') addToLog(result);
+    });
+    
+    
+}
+
+// 应用天气效果
+function applyWeatherEffects() {
+    if (battleState.weather === "none") return;
+    
+    const weather = weatherEffects[battleState.weather];
+    const myPokemon = battleState.myTeam[battleState.currentPokemon.my];
+    const oppPokemon = battleState.opponentTeam[battleState.currentPokemon.opponent];
+    
+    // 对所有在场宝可梦应用天气效果
+    [myPokemon, oppPokemon].forEach(pokemon => {
+        if (!pokemon || pokemon.currentHP <= 0) return;
+        
+        // 沙暴/冰雹伤害（特定属性免疫）
+        if (["sandstorm", "hail"].includes(battleState.weather)) {
+            const immuneTypes = battleState.weather === "sandstorm" 
+                ? ["Rock", "Ground", "Steel"]
+                : ["Ice"];
+            
+            if (!pokemon.types.some(type => immuneTypes.includes(type))) {
+                const damage = Math.floor(pokemon.maxHP * weather.damagePerTurn);
+                pokemon.currentHP = Math.max(0, pokemon.currentHP - damage);
+                addToLog(`${weather.name}对${pokemon.name}造成了伤害！`);
+            }
+        }
+    });
+}
+
+
+// 应用场地效果
+function applyTerrainEffects() {
+    if (battleState.terrain === "none") return;
+    
+    const terrain = terrainEffects[battleState.terrain];
+    // 应用场地持续效果（如青草场地恢复）
+    if (terrain.healingPerTurn) {
+        const myPokemon = battleState.myTeam[battleState.currentPokemon.my];
+        if (myPokemon && myPokemon.currentHP > 0 && isGrounded(myPokemon)) {
+            const heal = Math.floor(myPokemon.maxHP * terrain.healingPerTurn);
+            myPokemon.currentHP = Math.min(myPokemon.maxHP, myPokemon.currentHP + heal);
+        }
+    }
+}
+
+// 应用场地状态效果
+function applyFieldConditions() {
+    // 检查并应用隐形岩伤害
+    if (battleState.fieldConditions.my.stealthRock && 
+        battleState.myTeam[battleState.currentPokemon.my]) {
+        const pokemon = battleState.myTeam[battleState.currentPokemon.my];
+        const damage = Math.floor(pokemon.maxHP / 8);
+        pokemon.currentHP = Math.max(0, pokemon.currentHP - damage);
+        addToLog("隐形岩对宝可梦造成了伤害！");
+    }
+    
+    if (battleState.fieldConditions.opponent.stealthRock && 
+        battleState.opponentTeam[battleState.currentPokemon.opponent]) {
+        const pokemon = battleState.opponentTeam[battleState.currentPokemon.opponent];
+        const damage = Math.floor(pokemon.maxHP / 8);
+        pokemon.currentHP = Math.max(0, pokemon.currentHP - damage);
+        addToLog("隐形岩对宝可梦造成了伤害！");
+    }
+    
+    // 检查并应用撒菱伤害
+    if (battleState.fieldConditions.my.spikes > 0 && 
+        battleState.myTeam[battleState.currentPokemon.my]) {
+        const pokemon = battleState.myTeam[battleState.currentPokemon.my];
+        const damage = Math.floor(pokemon.maxHP * (battleState.fieldConditions.my.spikes * 0.125));
+        pokemon.currentHP = Math.max(0, pokemon.currentHP - damage);
+        addToLog("撒菱对宝可梦造成了伤害！");
+    }
+    
+    if (battleState.fieldConditions.opponent.spikes > 0 && 
+        battleState.opponentTeam[battleState.currentPokemon.opponent]) {
+        const pokemon = battleState.opponentTeam[battleState.currentPokemon.opponent];
+        const damage = Math.floor(pokemon.maxHP * (battleState.fieldConditions.opponent.spikes * 0.125));
+        pokemon.currentHP = Math.max(0, pokemon.currentHP - damage);
+        addToLog("撒菱对宝可梦造成了伤害！");
+    }
+}
+
+// 应用状态效果给单个宝可梦
+function applyStatusEffect(pokemon, status, type = "major") {
+    if (type === "major") {
+        // 主要状态互斥
+        if (pokemon.majorStatus !== "none") {
+            return false; // 已有主要状态
+        }
+        pokemon.majorStatus = status;
+        pokemon.statusTurns = 0;
+        
+        if (status === "badly-poisoned") {
+            pokemon.toxicCounter = 1;
+        }
+    } else {
+        // 次要状态可叠加
+        if (!pokemon.minorStatuses.includes(status)) {
+            pokemon.minorStatuses.push(status);
+        }
+    }
+    return true;
+}
+
+// 应用状态和场地效果
+function applyStatusAndFieldEffects() {
+    // 获取当前宝可梦
+    const myPokemon = battleState.myTeam[battleState.currentPokemon.my];
+    const opponentPokemon = battleState.opponentTeam[battleState.currentPokemon.opponent];
+    
+    // 回合开始特性
+    const myStartResult = AbilityHandler.triggerTurnStart(myPokemon, battleState);
+    const oppStartResult = AbilityHandler.triggerTurnStart(opponentPokemon, battleState);
+    
+    [myStartResult, oppStartResult].forEach(result => {
+        if (result && typeof result === 'string') addToLog(result);
+    });
+
+    // 应用天气效果
+    applyWeatherEffects();
+    
+    // 应用场地效果
+    applyTerrainEffects();
+    
+    // 应用状态效果给双方宝可梦
+    if (myPokemon && myPokemon.currentHP > 0) {
+        applyStatusEffect(myPokemon, 'my');
+    }
+    
+    if (opponentPokemon && opponentPokemon.currentHP > 0) {
+        applyStatusEffect(opponentPokemon, 'opponent');
+    }
+    
+    // 应用场地状态效果（如隐形岩、撒菱等）
+    applyFieldConditions();
+
+    // 应用携带道具的回合结束效果
+    if (myPokemon && myPokemon.currentHP > 0) {
+        const itemResult = applyHeldItemEffects(myPokemon, "turnEnd");
+        if (itemResult && typeof itemResult === 'string') {
+            addToLog(itemResult);
+        }
+        
+        // 检查低HP触发道具
+        const lowHPResult = applyHeldItemEffects(myPokemon, "lowHP");
+        if (lowHPResult && typeof lowHPResult === 'string') {
+            addToLog(lowHPResult);
+        }
+    }
+
+    if (opponentPokemon && opponentPokemon.currentHP > 0) {
+        const itemResult = applyHeldItemEffects(opponentPokemon, "turnEnd");
+        if (itemResult && typeof itemResult === 'string') {
+            addToLog(itemResult);
+        }
+        
+        // 检查低HP触发道具
+        const lowHPResult = applyHeldItemEffects(opponentPokemon, "lowHP");
+        if (lowHPResult && typeof lowHPResult === 'string') {
+            addToLog(lowHPResult);
+        }
+    }
+
+    // 回合结束特性
+    const myEndResult = AbilityHandler.triggerTurnEnd(myPokemon, battleState);
+    const oppEndResult = AbilityHandler.triggerTurnEnd(opponentPokemon, battleState);
+    [myEndResult, oppEndResult].forEach(result => {
+        if (result && typeof result === 'string') addToLog(result);
+    });
+}
+
+// 判断是否为接触招式
+function isContactMove(move) {
+    // 这里需要根据招式类型判断，简化实现
+    const nonContactMoves = ["喷射火焰", "十万伏特", "暴风雪", "精神强念"];
+    return !nonContactMoves.includes(move.name);
+}
+
+// 在伤害计算中集成特性加成
+function calculateDamage(move, attacker, defender, isCritical) {
+    // 原有的伤害计算...
+    
+    // 特性加成（如猛火、茂盛、激流等）
+    const abilityEffect = AbilityHandler.triggerAbility("movePower", attacker, move);
+    if (abilityEffect && abilityEffect.powerMultiplier) {
+        damage *= abilityEffect.powerMultiplier;
+    }
+    
+    // 天气与特性互动（如干燥皮肤、叶绿素等）
+    if (battleState.weather !== "none") {
+        const weatherEffect = handleWeatherAbilityInteractions(attacker, defender, battleState.weather);
+        damage *= weatherEffect.damageMultiplier || 1;
+    }
+    
+    return Math.max(1, Math.floor(damage));
+}
+
+//--------------------------------------------状态效果函数-完-----------------------------------------------
+// 使用技能
+function useMove(moveIndex) 
+{
+    const myPokemon = battleState.myTeam[battleState.currentPokemon.my];
+    const opponentPokemon = battleState.opponentTeam[battleState.currentPokemon.opponent];
+
+    
+    if (!myPokemon || !opponentPokemon || myPokemon.currentHP <= 0) {
+        addToLog("无法使用技能！");
+        return;
+    }
+    
+    const move = myPokemon.moves[moveIndex];
+    if (!move) {
+        addToLog("无效的技能！");
+        return;
+    }
+    const abilityResults = AbilityHandler.triggerMoveUsed(myPokemon, opponentPokemon, move);
+    abilityResults.forEach(result => {
+        if (result && typeof result === 'string') {
+            addToLog(result);
+        }
+    });
+    
+    // 记录当前回合
+    const currentTurn = battleState.turn;
+    
+    // 对于所有招式都进行命中判定
+    if (!checkHit(move, myPokemon, opponentPokemon)) {
+        addToLog(`第${currentTurn}回合：${myPokemon.name}使用了${move.name}，但是没有命中！`);
+        
+        // 未命中时正常进行对方回合
+        opponentTurn();
+        battleState.turn++;
+        updateUI();
+        return;
+    }
+    
+    // 判断是否暴击（仅对攻击招式有效）
+    const isCritical = move.power > 0 ? checkCriticalHit() : false;
+    
+    // 计算伤害（仅对攻击招式）
+    let damage = 0;
+    if (move.power > 0) {
+        damage = calculateDamage(move, myPokemon, opponentPokemon, isCritical);
+        damage = AbilityHandler.modifyDamage(move, myPokemon, opponentPokemon, damage);
+        opponentPokemon.currentHP = Math.max(0, opponentPokemon.currentHP - damage);
+        
+
+        addToLog(`第${currentTurn}回合：${myPokemon.name}使用了${move.name}，对${opponentPokemon.name}造成了${damage}点伤害！`);
+        
+        if (isCritical) {
+            addToLog("会心一击！");
+        }
+
+        if (isContactMove(move)) {
+        const contactResult = AbilityHandler.triggerContactDamage(myPokemon, opponentPokemon);
+        if (contactResult && typeof contactResult === 'string') {
+            addToLog(contactResult);
+        }
+
+    } else {
+        // 变化招式：命中后显示使用成功
+        addToLog(`第${currentTurn}回合：${myPokemon.name}使用了${move.name}！`);
+        applyMoveEffect(move, myPokemon, opponentPokemon);
+    }
+    
+    // 检查对方宝可梦是否倒下（仅对攻击招式）
+    if (move.power > 0 && opponentPokemon.currentHP <= 0) {
+        opponentPokemon.currentHP = 0; // 确保HP为0
+        addToLog(`${opponentPokemon.name}倒下了！`);
+        updateUI();
+        // 检查对方队伍是否全部倒下
+        if (checkTeamFainted(battleState.opponentTeam)) {
+            addToLog(`第${currentTurn}回合：对方所有宝可梦都倒下了！你获得了胜利！`);
+            // 胜利后允许捕捉训练家
+            addToLog("但是...战斗仍没有结束！");
+            return;
+        } else {
+            // 对方替换宝可梦
+            addToLog(`第${currentTurn}回合：对方正在替换宝可梦...`);
+            
+            // 在同一个回合内完成替换
+            opponentSwitchPokemon();
+            
+            // 当前回合结束，不执行对方的行动
+            battleState.turn++;
+            updateUI();
+            addToLog(`第${currentTurn}回合结束！`);
+            return;
+        }
+    }
+    // 检查气势披带等生存道具
+if (damage > 0 && opponentPokemon.currentHP - damage <= 0) {
+    const surviveEffect = applyHeldItemEffects(opponentPokemon, "damageTaken");
+    if (surviveEffect && surviveEffect.survive) {
+        opponentPokemon.currentHP = 1;
+        addToLog(`${opponentPokemon.name}的气势披带让它坚持住了！`);
+        if (consumeHeldItem(opponentPokemon, "damageTaken")) {
+            addToLog(`${opponentPokemon.name}的气势披带消耗了！`);
+        }
+    }
+}
+    //检查凹凸头盔道具
+
+
+    //检查坚硬特性
+    if (damage > 0 && opponentPokemon.currentHP - damage <= 0) {
+        const hardAbilityEffect = AbilityHandler.triggerAbility("surviveWith1HP", opponentPokemon);
+        if (hardAbilityEffect && hardAbilityEffect.survive) {
+            opponentPokemon.currentHP = 1;
+            addToLog(`${opponentPokemon.name}的坚硬特性让它坚持住了！`);
+        }
+    }
+    //检查反伤特性
+    if (damage > 0) {
+        const recoilEffect = AbilityHandler.triggerAbility("recoilDamage", opponentPokemon, myPokemon, move, damage);
+        if (recoilEffect && recoilEffect.recoilDamage) {
+            myPokemon.currentHP = Math.max(0, myPokemon.currentHP - recoilEffect.recoilDamage);
+            addToLog(`${myPokemon.name}因反伤特性受到了${recoilEffect.recoilDamage}点伤害！`);
+        }
+    }
+
+    // 对方回合
+    opponentTurn();
+    
+    // 检查我方宝可梦是否倒下
+    if (myPokemon.currentHP <= 0) {
+        myPokemon.currentHP = 0;
+        addToLog(`${myPokemon.name}倒下了！`);
+         updateUI();
+        
+        if (checkTeamFainted(battleState.myTeam)) {
+            addToLog(`第${currentTurn}回合：你所有宝可梦都倒下了！战斗失败！`);
+            endBattle(false);
+            return;
+        } else {
+            // 等待用户选择替换的宝可梦
+            addToLog(`第${currentTurn}回合：请选择替换的宝可梦！`);
+            showPokemonSelection();
+            // 注意：这里不增加回合数，等待用户选择后再结束回合
+            return;
+        }
+    }
+    
+    // 正常结束回合
+    battleState.turn++;
+    updateUI();
+    addToLog(`第${currentTurn}回合结束！`);
+}
+}
+
+// 检查命中率
+function checkHit(move, attacker, defender) {
+    const accuracy = move.accuracy / 100;
+    const accuracyModifier = getStatModifier(battleState.statChanges[attacker === battleState.myTeam[battleState.currentPokemon.my] ? 'my' : 'opponent'].accuracy);
+    const evasionModifier = getStatModifier(battleState.statChanges[defender === battleState.myTeam[battleState.currentPokemon.my] ? 'my' : 'opponent'].evasion);
+    
+    let hitChance = accuracy * accuracyModifier * evasionModifier;
+    
+    // 携带道具效果
+    const itemEffect = applyHeldItemEffects(attacker, "accuracyCheck", defender, move);
+    if (itemEffect && itemEffect.accuracyMultiplier) {
+        hitChance *= itemEffect.accuracyMultiplier;
+    }
+    //特性效果
+    const abilityEffect = AbilityHandler.triggerAbility("accuracyCheck", attacker, defender, move);
+    if (abilityEffect && abilityEffect.accuracyMultiplier) {
+        hitChance *= abilityEffect.accuracyMultiplier;
+    }
+    // 命中率不能超过100%或低于0%
+    hitChance = Math.min(1, Math.max(0, hitChance));
+
+
+    return Math.random() < hitChance;
+}
+
+// 检查暴击
+function checkCriticalHit(attacker = null, move = null) {
+    let critChance = 0.1; // 10%基础暴击率
+    
+    // 携带道具效果
+    if (attacker && attacker.item) {
+        const itemEffect = applyHeldItemEffects(attacker, "criticalCheck", null, move);
+        if (itemEffect && itemEffect.critBonus) {
+            critChance *= (1 + itemEffect.critBonus * 0.1);
+        }
+    }
+    // 特性效果
+    if (attacker) {
+        const abilityEffect = AbilityHandler.triggerAbility("criticalCheck", attacker, null, move);
+        if (abilityEffect && abilityEffect.critBonus) {
+            critChance *= (1 + abilityEffect.critBonus * 0.1);
+        }
+    }
+
+    return Math.random() < critChance;
+}
+
+//状态检查函数
+function canApplyStatus(pokemon, status) {
+    const statusEffect = statusEffects[status];
+    if (!statusEffect) return false;
+    
+    if (statusEffect.type === "major") {
+        // 主要状态互斥检查
+        if (pokemon.majorStatus !== "none") return false;
+        
+        // 场地免疫检查（如薄雾场地免疫异常状态）
+        if (battleState.terrain !== "none") {
+            const terrain = terrainEffects[battleState.terrain];
+            if (terrain.statusImmunity && isGrounded(pokemon)) {
+                return false;
+            }
+        }
+    }
+    
+    return true;
+}
+
+// 计算伤害
+function calculateDamage(move, attacker, defender, isCritical) {
+    const level = attacker.level;
+    let attack, defense;
+    
+    // 判断是物理还是特殊招式
+    if (move.category === '物理') {
+        attack = attacker.stats.atk * getStatModifier(battleState.statChanges[attacker === battleState.myTeam[battleState.currentPokemon.my] ? 'my' : 'opponent'].atk);
+        defense = defender.stats.def * getStatModifier(battleState.statChanges[defender === battleState.myTeam[battleState.currentPokemon.my] ? 'my' : 'opponent'].def);
+    } else {
+        attack = attacker.stats.spAtk * getStatModifier(battleState.statChanges[attacker === battleState.myTeam[battleState.currentPokemon.my] ? 'my' : 'opponent'].spAtk);
+        defense = defender.stats.spDef * getStatModifier(battleState.statChanges[defender === battleState.myTeam[battleState.currentPokemon.my] ? 'my' : 'opponent'].spDef);
+    }
+    
+    // 暴击时攻击方能力提升忽略，防御方能力降低忽略
+    if (isCritical) {
+        attack = attacker.stats[move.category === '物理' ? 'atk' : 'spAtk'];
+        defense = defender.stats[move.category === '物理' ? 'def' : 'spDef'];
+    }
+    if (battleState.weather !== "none") {
+        const weather = weatherEffects[battleState.weather];
+        if (move.type === "Fire") {
+            damage *= weather.fireBoost || 1;
+        } else if (move.type === "Water") {
+            damage *= weather.waterReduction || 1;
+        }
+    }
+    
+    // 场地加成
+    if (battleState.terrain !== "none") {
+        const terrain = terrainEffects[battleState.terrain];
+        if (move.type === terrain.electricBoost && move.type === "Electric") {
+            damage *= terrain.electricBoost;
+        }
+    }
+    const power = move.power;
+    const stab = attacker.types.includes(move.type) ? 1.5 : 1; // 本系加成
+    const effectiveness = calculateEffectiveness(move.type, defender.types);
+    // 携带道具加成
+    const itemEffect = applyHeldItemEffects(attacker, "damageCalculation", defender, move);
+if (itemEffect && itemEffect.damageMultiplier) {
+    damage *= itemEffect.damageMultiplier;
+}
+    // 伤害计算公式
+    let damage = Math.floor(Math.floor(Math.floor((2 * level / 5 + 2) * attack * power / defense) / 50) + 2);
+    damage *= stab;
+    damage *= effectiveness;
+    damage *= isCritical ? 1.5 : 1;
+    damage *= (Math.random() * 0.15 + 0.85); // 随机因子
+    
+    return Math.max(1, Math.floor(damage));
+}
+
+// 计算属性相克
+function calculateEffectiveness(moveType, defenderTypes) {
+    let effectiveness = 1;
+    
+    for (const defenderType of defenderTypes) {
+        if (typeEffectiveness[moveType] && typeEffectiveness[moveType][defenderType]) {
+            effectiveness *= typeEffectiveness[moveType][defenderType];
+        }
+    }
+    
+    return effectiveness;
+}
+
+// 获取能力变化修正
+function getStatModifier(stage) {
+    if (stage >= 0) {
+        return (2 + stage) / 2;
+    } else {
+        return 2 / (2 - stage);
+    }
+}
+
+// 检查队伍是否全部濒死
+function checkTeamFainted(team) {
+    if (!team || team.length === 0) return true;
+    
+    for (let i = 0; i < team.length; i++) {
+        if (team[i].currentHP > 0) {
+            return false; // 至少有一个宝可梦还有HP
+        }
+    }
+    
+    return true; // 所有宝可梦都濒死
+}
+
+// 应用携带道具效果
+function applyHeldItemEffects(pokemon, context, target = null, move = null) {
+    if (!pokemon.item || !pokemon.item.effect) return null;
+    
+    const item = pokemon.item.effect;
+    let result = null;
+    
+    switch (context) {
+        case "damageCalculation":
+            if (item.boost && move && move.type === item.element) {
+                result = { damageMultiplier: item.boost };
+            }
+            break;
+            
+        case "accuracyCheck":
+            if (item.accuracyBoost) {
+                result = { accuracyMultiplier: item.accuracyBoost };
+            }
+            break;
+            
+        case "criticalCheck":
+            if (item.critRatio) {
+                result = { critBonus: item.critRatio };
+            }
+            break;
+            
+        case "turnEnd":
+            if (item.effect === "turnEnd" && item.heal) {
+                const healAmount = Math.floor(pokemon.maxHP * item.heal);
+                pokemon.currentHP = Math.min(pokemon.maxHP, pokemon.currentHP + healAmount);
+                result = `${pokemon.name}的${pokemon.item.name}恢复了HP！`;
+            }
+            break;
+            
+        case "damageTaken":
+            if (item.effect === "survive" && pokemon.currentHP === pokemon.maxHP) {
+                result = { survive: true };
+            }
+            break;
+            
+        case "statusCure":
+            if (item.effect === "berry" && item.cureStatus === pokemon.status) {
+                pokemon.status = "none";
+                result = `${pokemon.name}的${pokemon.item.name}治愈了异常状态！`;
+                // 消耗树果
+                pokemon.item.name = "无";
+                pokemon.item.effect = null;
+            }
+            break;
+            
+        case "lowHP":
+            if (item.effect === "berry" && item.healThreshold && 
+                pokemon.currentHP <= pokemon.maxHP * item.healThreshold) {
+                const healAmount = Math.floor(pokemon.maxHP * item.healAmount);
+                pokemon.currentHP = Math.min(pokemon.maxHP, pokemon.currentHP + healAmount);
+                result = `${pokemon.name}的${pokemon.item.name}恢复了HP！`;
+                // 消耗树果
+                pokemon.item.name = "无";
+                pokemon.item.effect = null;
+            }
+            break;
+    }
+    
+    return result;
+}
+
+// 检查道具是否一次性消耗
+function consumeHeldItem(pokemon, context) {
+    if (!pokemon.item || !pokemon.item.effect) return false;
+    
+    const item = pokemon.item.effect;
+    if (item.oneTime) {
+        const shouldConsume = !item.chance || Math.random() < item.chance;
+        if (shouldConsume) {
+            pokemon.item.name = "无";
+            pokemon.item.effect = null;
+            return true;
+        }
+    }
+    return false;
+}
+
+// 对方回合
+function opponentTurn() {
+    const myPokemon = battleState.myTeam[battleState.currentPokemon.my];
+    const opponentPokemon = battleState.opponentTeam[battleState.currentPokemon.opponent];
+    
+    // 检查双方宝可梦是否都存活
+    if (!myPokemon || !opponentPokemon || myPokemon.currentHP <= 0 || opponentPokemon.currentHP <= 0) {
+        return;
+    }
+    
+    // 简单的AI逻辑
+    if (opponentPokemon.currentHP <= opponentPokemon.maxHP * 0.2 && battleState.opponentBag.healing.length > 0) {
+        // 生命值过低，使用回复道具
+        useOpponentHealingItem();
+    } else {
+        // 使用技能
+        const moveIndex = Math.floor(Math.random() * opponentPokemon.moves.length);
+        useOpponentMove(moveIndex);
+    }
+}
+
+
+// 对方使用技能
+function useOpponentMove(moveIndex) {
+    const myPokemon = battleState.myTeam[battleState.currentPokemon.my];
+    const opponentPokemon = battleState.opponentTeam[battleState.currentPokemon.opponent];
+    
+    if (!myPokemon || !opponentPokemon || opponentPokemon.currentHP <= 0) return;
+    
+    const move = opponentPokemon.moves[moveIndex];
+    if (!move) return;
+    
+    // 判断是否命中
+    if (!checkHit(move, opponentPokemon, myPokemon)) {
+        addToLog(`${opponentPokemon.name}使用了${move.name}，但是没有命中！`);
+        return;
+    }
+    
+    // 判断是否暴击（仅对攻击招式有效）
+    const isCritical = move.power > 0 ? checkCriticalHit() : false;
+    
+    // 计算伤害（仅对攻击招式）
+    let damage = 0;
+    if (move.power > 0) {
+        damage = calculateDamage(move, opponentPokemon, myPokemon, isCritical);
+        myPokemon.currentHP = Math.max(0, myPokemon.currentHP - damage);
+        addToLog(`${opponentPokemon.name}使用了${move.name}，对${myPokemon.name}造成了${damage}点伤害！`);
+        
+        if (isCritical) {
+            addToLog("会心一击！");
+        }
+    } else {
+        // 变化招式：命中后显示使用成功
+        addToLog(`${opponentPokemon.name}使用了${move.name}！`);
+        // 这里需要处理变化招式的效果
+        applyMoveEffect(move, opponentPokemon, myPokemon);
+    }
+    
+    // 检查我方宝可梦是否倒下（仅对攻击招式）
+    if (move.power > 0 && myPokemon.currentHP <= 0) {
+        addToLog(`${myPokemon.name}倒下了！`);
+        // 检查我方是否还有宝可梦
+        if (checkTeamFainted(battleState.myTeam)) {
+            addToLog(`你所有宝可梦都倒下了！战斗失败！`);
+            endBattle(false);
+            return;
+        }
+    }
+}
+
+// 对方使用回复道具
+function useOpponentHealingItem() {
+    const opponentPokemon = battleState.opponentTeam[battleState.currentPokemon.opponent];
+    
+    if (battleState.opponentBag.healing.length > 0) {
+        // 智能选择道具：优先使用全复药，然后根据HP情况选择
+        let selectedItem = null;
+        let selectedIndex = -1;
+        
+        // 优先选择全复药
+        for (let i = 0; i < battleState.opponentBag.healing.length; i++) {
+            const item = battleState.opponentBag.healing[i];
+            const effect = itemEffects[item.name];
+            if (effect && effect.type === 'healing' && effect.cureAllStatus) {
+                selectedItem = item;
+                selectedIndex = i;
+                break;
+            }
+        }
+        
+        // 如果没有全复药，根据HP情况选择
+        if (!selectedItem) {
+            const hpRatio = opponentPokemon.currentHP / opponentPokemon.maxHP;
+            
+            for (let i = 0; i < battleState.opponentBag.healing.length; i++) {
+                const item = battleState.opponentBag.healing[i];
+                const effect = itemEffects[item.name];
+                
+                if (effect && effect.type === 'healing') {
+                    // 低血量时优先使用大恢复道具
+                    if (hpRatio < 0.3 && (effect.amount === 'full' || effect.amount >= 100)) {
+                        selectedItem = item;
+                        selectedIndex = i;
+                        break;
+                    }
+                    // 中等血量使用中等恢复道具
+                    else if (hpRatio < 0.6 && effect.amount >= 60 && effect.amount < 100) {
+                        selectedItem = item;
+                        selectedIndex = i;
+                        break;
+                    }
+                    // 较高血量使用小恢复道具
+                    else if (effect.amount < 60) {
+                        selectedItem = item;
+                        selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        if (selectedItem) {
+            const effect = itemEffects[selectedItem.name];
+            
+            if (effect.type === 'healing') {
+                if (effect.amount === 'full') {
+                    opponentPokemon.currentHP = opponentPokemon.maxHP;
+                } else {
+                    opponentPokemon.currentHP = Math.min(opponentPokemon.maxHP, 
+                        opponentPokemon.currentHP + effect.amount);
+                }
+                addToLog(`对方使用了${selectedItem.name}，恢复了${opponentPokemon.name}的HP！`);
+                
+                // 全复药的特殊效果
+                if (effect.cureAllStatus && opponentPokemon.status !== 'none') {
+                    const oldStatus = opponentPokemon.status;
+                    opponentPokemon.status = 'none';
+                    addToLog(`${opponentPokemon.name}的异常状态被治愈了！`);
+                }
+                
+                // 减少道具数量
+                selectedItem.quantity--;
+                if (selectedItem.quantity <= 0) {
+                    battleState.opponentBag.healing.splice(selectedIndex, 1);
+                }
+            }
+        }
+    }
+}
+
+// 对方替换宝可梦
+function opponentSwitchPokemon() {
+    const oldPokemon = battleState.opponentTeam[battleState.currentPokemon.opponent];
+    
+    // 找到所有可用的宝可梦
+    const availablePokemon = [];
+    for (let i = 0; i < battleState.opponentTeam.length; i++) {
+        if (battleState.opponentTeam[i].currentHP > 0 && i !== battleState.currentPokemon.opponent) {
+            availablePokemon.push(i);
+        }
+    }
+
+    if (availablePokemon.length > 0) {
+        // 随机选择一个可用的宝可梦
+        const randomIndex = Math.floor(Math.random() * availablePokemon.length);
+        const newIndex = availablePokemon[randomIndex];
+        const newPokemon = battleState.opponentTeam[newIndex];
+        
+        // 触发退场特性（在切换前）
+        const exitResult = AbilityHandler.triggerOnExit(oldPokemon, battleState);
+        if (exitResult && typeof exitResult === 'string') {
+            addToLog(exitResult);
+        }
+
+        // 修复：安全地处理 statChanges 数据
+        try {
+            // 保存下场宝可梦的能力变化
+            if (oldPokemon && battleState.statChanges.opponent) {
+                oldPokemon.statChanges = JSON.parse(JSON.stringify(battleState.statChanges.opponent));
+            }
+            
+            // 切换当前宝可梦索引
+            battleState.currentPokemon.opponent = newIndex;
+            
+            // 恢复新上场宝可梦的能力变化
+            if (newPokemon && newPokemon.statChanges) {
+                battleState.statChanges.opponent = JSON.parse(JSON.stringify(newPokemon.statChanges));
+            } else {
+                // 如果没有 statChanges 数据，初始化为默认值
+                battleState.statChanges.opponent = { atk: 0, def: 0, spAtk: 0, spDef: 0, speed: 0, accuracy: 0, evasion: 0 };
+            }
+        } catch (error) {
+            console.error('处理宝可梦状态变化时出错:', error);
+            // 设置默认值作为后备
+            battleState.statChanges.opponent = { atk: 0, def: 0, spAtk: 0, spDef: 0, speed: 0, accuracy: 0, evasion: 0 };
+        }
+        
+        // 触发入场特性（在切换后）
+        const myCurrentPokemon = battleState.myTeam[battleState.currentPokemon.my];
+        const entryResult = AbilityHandler.triggerOnEntry(newPokemon, myCurrentPokemon, battleState);
+        if (entryResult && typeof entryResult === 'string') {
+            addToLog(entryResult);
+        }
+        
+        addToLog(`对方换上了${newPokemon.name}！`);
+        updateUI();
+    } else {
+        addToLog("对方没有可替换的宝可梦！");
+    }
+}
+
+// 应用状态效果
+function applyStatusEffect(pokemon, side) {
+    
+    if (pokemon.status === 'none') return;
+    // 检查携带道具是否能治愈状态
+    if (pokemon.status !== 'none') 
+    {
+        const cureResult = applyHeldItemEffects(pokemon, "statusCure");
+        if (cureResult && typeof cureResult === 'string') 
+        {
+            addToLog(cureResult);
+            return; // 如果道具治愈了状态，不再应用状态伤害
+        }
+    }
+
+    const effect = statusEffects[pokemon.status];
+    if (!effect) return;
+    
+    switch (pokemon.status) {
+        case 'burn':
+            const burnDamage = Math.floor(pokemon.maxHP * effect.damage);
+            pokemon.currentHP = Math.max(0, pokemon.currentHP - burnDamage);
+            addToLog(`${pokemon.name}受到了灼伤伤害！`);
+            break;
+        case 'poison':
+            const poisonDamage = Math.floor(pokemon.maxHP * effect.damage);
+            pokemon.currentHP = Math.max(0, pokemon.currentHP - poisonDamage);
+            addToLog(`${pokemon.name}受到了中毒伤害！`);
+            break;
+        // 其他状态效果...
+    }
+}
+
+// 替换宝可梦
+function switchPokemon(index) {
+    if (index === battleState.currentPokemon.my) return;
+    
+    const newPokemon = battleState.myTeam[index];
+    if (newPokemon.currentHP <= 0) {
+        addToLog(`${newPokemon.name}已经濒死，无法出战！`);
+        return;
+    }
+    
+    const oldPokemon = battleState.myTeam[battleState.currentPokemon.my];
+    battleState.currentPokemon.my = index;
+    
+    addToLog(`收回了${oldPokemon.name}，派出了${newPokemon.name}！`);
+    
+    // 对方回合
+    opponentTurn();
+    updateUI();
+}
+
+// 使用回复道具
+function useHealingItem(index) {
+    const item = battleState.myBag.healing[index];
+    if (!item || item.quantity <= 0) {
+        addToLog("没有可用的道具！");
+        return;
+    }
+    
+    const myPokemon = battleState.myTeam[battleState.currentPokemon.my];
+    const effect = itemEffects[item.name];
+    
+    if (!effect) {
+        addToLog(`${item.name}的效果未知！`);
+        return;
+    }
+    
+    // 处理不同类型的道具
+    switch (effect.type) {
+        case 'healing':
+            useHealingEffect(item, effect, myPokemon);
+            break;
+            
+        case 'status':
+            useStatusEffect(item, effect, myPokemon);
+            break;
+            
+        case 'revive':
+            useReviveEffect(item, effect, myPokemon);
+            break;
+            
+        case 'pp':
+            usePPEffect(item, effect, myPokemon);
+            break;
+            
+        default:
+            addToLog(`${item.name}无法在此使用！`);
+            return;
+    }
+    
+    // 减少道具数量
+    item.quantity--;
+    if (item.quantity <= 0) {
+        battleState.myBag.healing.splice(index, 1);
+    }
+    
+    updateUI();
+}
+
+// 使用恢复效果
+function useHealingEffect(item, effect, pokemon) {
+    if (pokemon.currentHP <= 0) {
+        addToLog(`${pokemon.name}已经濒死，无法使用${item.name}！`);
+        return;
+    }
+    
+    let healAmount = 0;
+    let healMessage = "";
+    
+    if (effect.amount === 'full') {
+        healAmount = pokemon.maxHP - pokemon.currentHP;
+        pokemon.currentHP = pokemon.maxHP;
+        healMessage = `完全恢复了${pokemon.name}的HP！`;
+    } else if (effect.amount === 'half') {
+        healAmount = Math.floor(pokemon.maxHP / 2);
+        pokemon.currentHP = Math.min(pokemon.maxHP, pokemon.currentHP + healAmount);
+        healMessage = `恢复了${pokemon.name}一半的HP！`;
+    } else {
+        healAmount = effect.amount;
+        pokemon.currentHP = Math.min(pokemon.maxHP, pokemon.currentHP + healAmount);
+        healMessage = `恢复了${pokemon.name}${healAmount}点HP！`;
+    }
+    
+    addToLog(`使用了${item.name}，${healMessage}`);
+    
+    // 全复药的特殊效果：治愈所有状态
+    if (effect.cureAllStatus) {
+        if (pokemon.status !== 'none') {
+            const oldStatus = pokemon.status;
+            pokemon.status = 'none';
+            addToLog(`${pokemon.name}的${statusEffects[oldStatus]?.name || oldStatus}状态被治愈了！`);
+        }
+    }
+}
+
+// 使用状态恢复效果
+function useStatusEffect(item, effect, pokemon) {
+    if (pokemon.currentHP <= 0) {
+        addToLog(`${pokemon.name}已经濒死，无法使用${item.name}！`);
+        return;
+    }
+    
+    if (effect.cureAllStatus) {
+        // 治愈所有状态
+        if (pokemon.status !== 'none') {
+            const oldStatus = pokemon.status;
+            pokemon.status = 'none';
+            addToLog(`使用了${item.name}，治愈了${pokemon.name}的${statusEffects[oldStatus]?.name || oldStatus}状态！`);
+        } else {
+            addToLog(`使用了${item.name}，但${pokemon.name}没有异常状态！`);
+        }
+    } else if (effect.cure && effect.status) {
+        // 治愈特定状态
+        if (pokemon.status === effect.status) {
+            pokemon.status = 'none';
+            addToLog(`使用了${item.name}，治愈了${pokemon.name}的${statusEffects[effect.status]?.name || effect.status}状态！`);
+        } else {
+            addToLog(`使用了${item.name}，但${pokemon.name}没有${statusEffects[effect.status]?.name || effect.status}状态！`);
+        }
+    }
+}
+
+// 使用复活效果
+function useReviveEffect(item, effect, pokemon) {
+    if (pokemon.currentHP > 0) {
+        addToLog(`${pokemon.name}还没有濒死，无法使用${item.name}！`);
+        return;
+    }
+    
+    if (effect.amount === 'half') {
+        pokemon.currentHP = Math.floor(pokemon.maxHP / 2);
+        addToLog(`使用了${item.name}，${pokemon.name}复活了并恢复了一半HP！`);
+    } else {
+        pokemon.currentHP = effect.amount;
+        addToLog(`使用了${item.name}，${pokemon.name}复活了并恢复了${effect.amount}HP！`);
+    }
+    
+    pokemon.status = 'none'; // 复活时清除状态
+}
+
+// 捕捉宝可梦
+
+
+// 捕捉训练家（胜利后）
+function captureTrainer(item) {
+    const trainerName = battleState.opponentBag.name || "对方训练家";
+    
+    // 计算捕捉训练家的概率（比捕捉宝可梦困难）
+    const baseCatchRate = item.effect.catchRate || 1.0;
+    const trainerCatchRate = baseCatchRate * 0.3; // 训练家捕捉率更低
+    
+    if (Math.random() < trainerCatchRate) {
+        addToLog(`不可思议！你成功捕捉了${trainerName}！`);
+        addToLog(`${trainerName}成为了你的宝可梦！`);
+        
+        // 这里可以添加更多训练家被捕捉后的效果
+        // 例如获得对方的道具、金钱等
+        
+        endBattle(true);
+    } else {
+        addToLog(`捕捉失败！${trainerName}挣脱了精灵球！`);
+        addToLog(`${trainerName}：想捕捉我？还早着呢！`);
+        
+        // 即使捕捉失败，战斗也已经胜利
+        endBattle(true);
+    }
+}
+
+// 计算捕捉率
+function calculateCatchRate(item, pokemon) {
+    let baseCatchRate;
+    
+    // 处理不同类型的捕捉率计算
+    if (typeof item.effect.catchRate === 'function') {
+        baseCatchRate = item.effect.catchRate(battleState, pokemon);
+    } else {
+        baseCatchRate = item.effect.catchRate || 1.0;
+    }
+    
+    // 大师球直接返回100%捕捉率
+    if (item.name === "大师球") {
+        return 1.0;
+    }
+    
+    const hpRatio = 1 - (pokemon.currentHP / pokemon.maxHP);
+    const statusBonus = getStatusCatchBonus(pokemon.status);
+    
+    // 改进的捕捉率计算公式
+    let catchRate = baseCatchRate * hpRatio * statusBonus;
+    
+    // 确保捕捉率在合理范围内
+    catchRate = Math.max(0.01, Math.min(0.95, catchRate));
+    
+    return catchRate;
+}
+
+// 使用精灵球（包含捕捉训练家功能）
+function usePokeball(index) {
+    const item = battleState.myBag.pokeballs[index];
+    if (!item || item.quantity <= 0) {
+        addToLog("没有可用的精灵球！");
+        return;
+    }
+    
+    const opponentPokemon = battleState.opponentTeam[battleState.currentPokemon.opponent];
+    
+    // 检查是否已经胜利
+    const isVictory = checkTeamFainted(battleState.opponentTeam);
+    
+    if (isVictory) {
+        // 胜利后捕捉训练家
+        captureTrainer(item);
+    } else {
+        // 正常捕捉宝可梦
+        capturePokemon(item, opponentPokemon);
+    }
+    
+    // 减少道具数量
+    item.quantity--;
+    if (item.quantity <= 0) {
+        battleState.myBag.pokeballs.splice(index, 1);
+    }
+    
+    updateUI();
+}
+
+//捕捉宝可梦函数
+function capturePokemon(item, pokemon) {
+    if (!pokemon || pokemon.currentHP <= 0) {
+        addToLog("无法捕捉濒死的宝可梦！");
+        return;
+    }
+    
+    // 大师球必定捕捉
+    if (item.name === "大师球") {
+        addToLog(`使用了大师球！`);
+        addToLog(`恭喜！成功捕捉了${pokemon.name}！`);
+        
+        // 处理捕捉成功后的逻辑
+        handleSuccessfulCapture(pokemon, item);
+        return;
+    }
+    
+    // 计算捕捉率
+    const catchRate = calculateCatchRate(item, pokemon);
+    
+    addToLog(`使用了${item.name}！`);
+    
+    // 添加精灵球动画效果描述
+    addToLog(`精灵球在空中划出优美的弧线...`);
+    
+    if (Math.random() < catchRate) {
+        addToLog(`叮！成功捕捉了${pokemon.name}！`);
+        
+        // 处理特殊球的效果
+        handleSpecialBallEffects(item, pokemon);
+        
+        // 处理捕捉成功后的逻辑
+        handleSuccessfulCapture(pokemon, item);
+    } else {
+        // 根据捕捉率显示不同的挣脱描述
+        if (catchRate < 0.3) {
+            addToLog(`捕捉失败！${pokemon.name}轻易地挣脱了精灵球！`);
+        } else if (catchRate < 0.6) {
+            addToLog(`捕捉失败！${pokemon.name}从精灵球中挣脱出来了！`);
+        } else {
+            addToLog(`好可惜！差一点就成功了！${pokemon.name}挣脱了精灵球！`);
+        }
+        
+        // 对方回合
+        opponentTurn();
+    }
+}
+
+// 处理特殊球的效果
+function handleSpecialBallEffects(item, pokemon) {
+    const effect = item.effect;
+    
+    // 治愈球效果
+    if (effect.healOnCapture) {
+        pokemon.currentHP = pokemon.maxHP;
+        pokemon.status = 'none';
+        addToLog(`${pokemon.name}被完全治愈了！`);
+    }
+    
+    // 豪华球效果
+    if (effect.friendshipBoost) {
+        addToLog(`${pokemon.name}看起来很开心！`);
+    }
+}
+
+// 处理成功捕捉后的逻辑
+function handleSuccessfulCapture(pokemon, item) {
+    // 将宝可梦添加到队伍（如果还有空位）
+    if (battleState.myTeam.length < 6) {
+        // 复制宝可梦数据，恢复HP
+        const capturedPokemon = JSON.parse(JSON.stringify(pokemon));
+        capturedPokemon.currentHP = capturedPokemon.maxHP;
+        capturedPokemon.status = 'none';
+        
+        // 如果是治愈球，已经治愈过了
+        if (item.effect.healOnCapture) {
+            capturedPokemon.currentHP = capturedPokemon.maxHP;
+        }
+        
+        battleState.myTeam.push(capturedPokemon);
+        addToLog(`${pokemon.name}加入了你的队伍！`);
+    } else {
+        addToLog("你的队伍已满，无法接收新的宝可梦！");
+        addToLog(`${pokemon.name}被传送到了电脑！`);
+    }
+    
+    // 对方替换宝可梦
+    opponentSwitchPokemon();
+}
+
+//获取状态对捕捉的加成
+function getStatusCatchBonus(status) {
+    switch (status) {
+        case 'paralysis':
+        case 'burn':
+        case 'poison':
+            return 1.5;
+        case 'sleep':
+        case 'freeze':
+            return 2.0;
+        case 'badly-poisoned':
+            return 1.5;
+        default:
+            return 1.0;
+    }
+}
+
+
+
+// 改进的胜利检查函数
+function checkVictory() {
+    const myTeamFainted = checkTeamFainted(battleState.myTeam);
+    const opponentTeamFainted = checkTeamFainted(battleState.opponentTeam);
+    
+    if (myTeamFainted) {
+        addToLog("你所有宝可梦都倒下了！战斗失败！");
+        endBattle(false);
+        return false;
+    } else if (opponentTeamFainted) {
+        addToLog(`对方所有宝可梦都倒下了！你获得了胜利！`);
+        
+        // 胜利后允许捕捉训练家
+        document.querySelectorAll('.item-option').forEach(button => {
+            button.disabled = false;
+            button.style.opacity = '1';
+        });
+        
+        addToLog("但是...战斗仍没有结束！");
+        return true;
+    }
+    
+    return null;
+}
+
+// 在每次造成伤害后检查胜利条件
+function checkFaintedAfterDamage() {
+    const result = {
+        opponentFainted: false,
+        myFainted: false,
+        opponentTeamFainted: false,
+        myTeamFainted: false
+    };
+    
+    const myPokemon = battleState.myTeam[battleState.currentPokemon.my];
+    const opponentPokemon = battleState.opponentTeam[battleState.currentPokemon.opponent];
+    
+    // 检查对方宝可梦是否倒下
+    if (opponentPokemon.currentHP <= 0) {
+        result.opponentFainted = true;
+        result.opponentTeamFainted = checkTeamFainted(battleState.opponentTeam);
+    }
+    
+    // 检查我方宝可梦是否倒下
+    if (myPokemon.currentHP <= 0) {
+        result.myFainted = true;
+        result.myTeamFainted = checkTeamFainted(battleState.myTeam);
+    }
+    
+    return result;
+}
+
+// 逃跑/认输
+function flee() {
+    if (confirm("确定要逃跑/认输吗？")) {
+        addToLog("你选择了逃跑/认输！");
+        endBattle(false);
+    }
+}
+
+// 结束战斗
+function endBattle(isWin) {
+    addToLog(isWin ? "战斗胜利！" : "战斗失败！");
+    
+    // 禁用所有操作按钮
+    document.querySelectorAll('.move-option, .pokemon-option, .item-option, #flee-btn').forEach(button => {
+        button.disabled = true;
+        button.style.opacity = '0.5';
+    });
+}
+
+// 导出数据
+function exportData() {
+    let exportText = "";
+    
+    // 导出我方宝可梦阵容
+    exportText += "#我方宝可梦阵容#\n";
+    battleState.myTeam.forEach((pokemon, index) => {
+        exportText += `##${index + 1}.${pokemon.name}##\n`;
+        exportText += `属性:${pokemon.types.join(',')}\n`;
+        exportText += `等级:${pokemon.level}\n`;
+        exportText += `能力值:${pokemon.stats.hp},${pokemon.stats.atk},${pokemon.stats.def},${pokemon.stats.spAtk},${pokemon.stats.spDef},${pokemon.stats.speed}\n`;
+        exportText += `特性:${pokemon.ability}\n`;
+        exportText += `携带道具:${pokemon.item.name || '无'}\n`;
+        exportText += `生命值当前/上限:${pokemon.currentHP}/${pokemon.maxHP}\n`;
+        exportText += "招式列表:\n";
+        pokemon.moves.forEach(move => {
+            exportText += `招式.${move.name},${move.type},${move.category},${move.accuracy},${move.power}\n`;
+        });
+        exportText += "\n";
+    });
+    
+    // 导出对方宝可梦阵容
+    exportText += "#对方宝可梦阵容#\n";
+    battleState.opponentTeam.forEach((pokemon, index) => {
+        exportText += `##${index + 1}.${pokemon.name}##\n`;
+        exportText += `属性:${pokemon.types.join(',')}\n`;
+        exportText += `等级:${pokemon.level}\n`;
+        exportText += `能力值:${pokemon.stats.hp},${pokemon.stats.atk},${pokemon.stats.def},${pokemon.stats.spAtk},${pokemon.stats.spDef},${pokemon.stats.speed}\n`;
+        exportText += `特性:${pokemon.ability}\n`;
+        exportText += `携带道具:${pokemon.item.name || '无'}\n`;
+        exportText += `生命值当前/上限:${pokemon.currentHP}/${pokemon.maxHP}\n`;
+        exportText += "招式列表:\n";
+        pokemon.moves.forEach(move => {
+            exportText += `招式.${move.name},${move.type},${move.category},${move.accuracy},${move.power}\n`;
+        });
+        exportText += "\n";
+    });
+    
+    document.getElementById('export-data').value = exportText;
+}
+
+// 重置对战
+function resetBattle() {
+    if (confirm("确定要重置对战吗？所有进度将丢失！")) {
+        document.getElementById('import-data').value = '';
+        document.getElementById('export-data').value = '';
+        document.getElementById('log-content').innerHTML = '';
+        
+        // 重置状态到初始值
+        battleState = {
+            myTeam: [],
+            opponentTeam: [],
+            myBag: { healing: [], pokeballs: [] },
+            opponentBag: { healing: [], pokeballs: [], name: "" },
+            currentPokemon: { my: 0, opponent: 0 },
+            battleLog: [],
+            turn: 0,
+            weather: "none",
+            terrain: "none",
+            fieldConditions: {
+                my: { stealthRock: false, spikes: 0, toxicSpikes: 0, reflect: 0, lightScreen: 0, auroraVeil: 0 },
+                opponent: { stealthRock: false, spikes: 0, toxicSpikes: 0, reflect: 0, lightScreen: 0, auroraVeil: 0 }
+            },
+            statChanges: {
+                my: { atk: 0, def: 0, spAtk: 0, spDef: 0, speed: 0, accuracy: 0, evasion: 0 },
+                opponent: { atk: 0, def: 0, spAtk: 0, spDef: 0, speed: 0, accuracy: 0, evasion: 0 }
+            }
+        };
+        
+        // 重新启用所有按钮
+        document.querySelectorAll('.move-option, .pokemon-option, .item-option, #flee-btn').forEach(button => {
+            button.disabled = false;
+            button.style.opacity = '1';
+        });
+        
+        // 如果有示例数据，重新初始化对战
+        const importData = document.getElementById('import-data').value;
+        if (importData.trim()) {
+            parseImportData(importData);
+        } else {
+            updateUI();
+            addToLog("对战已重置，可以重新导入数据开始新对战！");
+        }
+    }
+}
+
+// 初始化页面
+function init() {
+    // 绑定按钮事件
+    document.getElementById('import-btn').addEventListener('click', () => {
+        const data = document.getElementById('import-data').value;
+        if (data.trim()) {
+            parseImportData(data);
+        } else {
+            alert("请先粘贴对战数据！");
+        }
+    });
+    
+    document.getElementById('reset-btn').addEventListener('click', resetBattle);
+    document.getElementById('flee-btn').addEventListener('click', flee);
+    document.getElementById('export-btn').addEventListener('click', exportData);
+    
+    // 绑定折叠/展开详情按钮
+    document.querySelectorAll('.toggle-details').forEach(button => {
+        button.addEventListener('click', function() {
+            const details = this.nextElementSibling;
+            details.classList.toggle('active');
+            this.textContent = details.classList.contains('active') ? '▲ 其他信息' : '▼ 其他信息';
+        });
+    });
+    
+    // 初始化格式说明
+    initFormatInfo();
+    
+    // 添加示例数据
+    document.getElementById('import-data').value = `完整格式版本示例:
+#我的背包#
+##回复道具:##
+1.[伤药,5]2.[好伤药,3]3.[全满药,1]4.[麻痹药,1]
+##精灵球:##
+1.[精灵球,10]2.[超级球,5]3.[高级球,2]
+#我方宝可梦阵容#
+##1.皮卡丘##
+属性:电
+等级:90
+能力值:335,55,40,98,50,90
+特性:静电
+携带道具:电气球,是,提升,25%,特攻,100,4
+生命值当前/上限:135/135
+招式列表:
+招式1.电击,电,物理,100,40,否,0,0,0,0,0
+招式2.电光一闪,普通,物理,100,40,否,0,0,0,0,0
+招式3.影子分身,普通,变化,100,0,是,1,我方,回避率,2,100
+招式4.十万伏特,电,特殊,100,100,否,0,0,0,0,0
+##2.喷火龙##
+属性:火,飞行
+等级:36
+能力值:178,124,78,109,85,100
+特性:猛火
+携带道具:木炭,是,提升,18%,火系招式威力,100,4
+生命值当前/上限:178/178
+招式列表:
+招式1.喷射火焰,火,特殊,100,90,否,0,0,0,0,0
+招式2.空气斩,飞行,物理,95,75,是,-1,对方,防御,1,30
+招式3.龙之爪,龙,物理,100,80,否,0,0,0,0,0
+招式4.蓄能焰袭,火,物理,90,130,是,1,我方,速度,1,100
+
+#对手的背包#
+##莉莉艾##
+##回复道具:##
+1.[好伤药,8]
+##精灵球:##
+1.[无,0]
+#对方宝可梦阵容#
+##1.皮皮##
+属性:妖精
+等级:32
+能力值:145,65,68,80,85,55
+特性:魔法防守
+携带道具:无
+生命值当前/上限:145/145
+招式列表:
+招式1.月亮之力,妖精,特殊,100,95,是,-1,对方,特防,1,15
+招式2.唱歌,普通,变化,55,0,否,0,0,0,0,0
+招式3.反射壁,超能力,变化,100,0,否,3,0,0,0,0
+招式4.光墙,超能力,变化,100,0,否,3,0,0,0,0
+##2.蝶结萌虻##
+属性:虫,妖精
+等级:28
+能力值:115,65,60,75,80,104
+特性:采蜜
+携带道具:无
+生命值当前/上限:115/115
+招式列表:
+招式1.花粉团,虫,特殊,100,80,否,0,0,0,0,0
+招式2.蝶舞,虫,变化,100,0,是,1,我方,速度,1,100
+招式3.光墙,超能力,变化,100,0,否,3,0,0,0,0
+招式4.急速折返,虫,物理,100,70,否,2,0,0,0,0`;
+    
+    addToLog("欢迎使用宝可梦对战模拟器！请导入数据开始对战。");
+}
+
+// 初始化格式说明
+function initFormatInfo() {
+    const formatContent = document.querySelector('.format-content');
+    formatContent.innerHTML = `完整格式版本:
+#我的背包#
+##回复道具:##
+1.[名称,数量]2.[名称,数量]3.[...]
+##精灵球:##
+1.[名称,数量]2.[名称,数量]3.[...]
+
+#对手的背包#
+##对手名称##
+##回复道具:##
+1.[名称,数量]2.[名称,数量]3.[...]
+##精灵球:##
+1.[名称,数量]2.[名称,数量]3.[...]
+
+#我方宝可梦阵容#
+##1.名称##
+属性:
+等级:
+能力值:hp,atk,def,sp_atk,sp_def,speed
+特性:
+携带道具:名称，是否改变造成能力变化,提升/降低,我方/对方的某项的次数，改变能力的概率,改变时机。
+生命值当前/上限:
+招式列表:
+招式1.名称，属性，类型，命中率，威力，是否改变能力值，[提升/降低]，我方/对方的，[能力变化七项的某项]，[改变次数]，改变能力的概率
+招式2. ... 招式3. ... 招式4. ... 
+
+#对方宝可梦阵容#
+##1.名称##
+属性:...
+等级...
+能力值:...
+...
+
+AI输出的简化版本：（仅招式格式有区别）
+招式1.名称，属性，类型，命中率，威力，改变能力值
+招式2. ... 
+招式3. ... 
+招式4. ... 
+`
+;
+
+
+}
+
+// 页面加载完成后初始化
+document.addEventListener('DOMContentLoaded', init);
+// 能力变化修改函数
+function modifyStat(stage, amount) {
+    // 确保能力变化在-6到+6之间
+    const newStage = Math.max(-6, Math.min(6, stage + amount));
+    return newStage;
+}
+
+// 应用能力变化
+function applyStatChange(side, stat, amount) {
+    battleState.statChanges[side][stat] = modifyStat(battleState.statChanges[side][stat], amount);
+}
+
+// 检查能力变化是否有效
+function isValidStatChange(side, stat, amount) {
+    const current = battleState.statChanges[side][stat];
+    const newValue = current + amount;
+    return newValue >= -6 && newValue <= 6;
+}
+
+// 处理变化招式效果
+function applyMoveEffect(move, user, target) {
+    // 优先使用招式数据库中的效果
+    const moveData = MovesDatabase[move.name];
+    if (moveData) {
+        // 使用招式数据库中的效果
+        switch (moveData.effectType) {
+            case MoveEffectTypes.STAT_UP:
+            case MoveEffectTypes.STAT_DOWN:
+                MoveEffectHandler.handleStatChange(moveData, user, target);
+                break;
+            case MoveEffectTypes.SPECIAL:
+                if (moveData.weather) {
+                    MoveEffectHandler.handleWeather(moveData, battleState);
+                }
+                if (moveData.status) {
+                    MoveEffectHandler.handleStatus(moveData, target);
+                }
+                break;
+        }
+    } else {
+        // 如果没有在数据库中定义，使用解析的效果类型
+        switch (move.effectType) {
+            case 1: // 能力提升
+                // 默认提升攻击
+                applyStatChange(user === battleState.myTeam[battleState.currentPokemon.my] ? 'my' : 'opponent', 'atk', 1);
+                addToLog(`${user.name}的攻击提升了！`);
+                break;
+            case -1: // 能力降低
+                // 默认降低防御
+                applyStatChange(target === battleState.myTeam[battleState.currentPokemon.my] ? 'my' : 'opponent', 'def', -1);
+                addToLog(`${target.name}的防御降低了！`);
+                break;
+            case 2: // 特殊效果
+                // 根据招式名称判断效果
+                handleSpecialMoveEffect(move, user, target);
+                break;
+            default: // 无效果
+                // 不做任何处理
+                break;
+        }
+    }
+}
+
+// 处理特殊招式效果
+function handleSpecialMoveEffect(move, user, target) {
+    // 根据招式名称判断具体效果
+    switch (move.name) {
+        case '催眠粉':
+            if (canApplyStatus(target, 'sleep')) {
+                target.status = 'sleep';
+                addToLog(`${target.name}陷入了睡眠状态！`);
+            }
+            break;
+        case '寄生种子':
+            if (!target.minorStatuses.includes('leech-seed')) {
+                target.minorStatuses.push('leech-seed');
+                addToLog(`${target.name}被种下了寄生种子！`);
+            }
+            break;
+        case '大晴天':
+            battleState.weather = 'sun';
+            addToLog('天气变成了大晴天！');
+            break;
+        case '青草场地':
+            battleState.terrain = 'grassy';
+            addToLog('场地变成了青草场地！');
+            break;
+        // 可以继续添加更多招式的特殊效果
+        default:
+            addToLog(`${move.name}产生了特殊效果！`);
+            break;
+    }
+}
+
+// 速度比较，决定出手顺序
+function getTurnOrder() {
+    const myPokemon = battleState.myTeam[battleState.currentPokemon.my];
+    const opponentPokemon = battleState.opponentTeam[battleState.currentPokemon.opponent];
+    
+    if (!myPokemon || !opponentPokemon) return [];
+    
+    // 考虑能力变化和状态对速度的影响
+    let mySpeed = myPokemon.stats.speed * getStatModifier(battleState.statChanges.my.speed);
+    let opponentSpeed = opponentPokemon.stats.speed * getStatModifier(battleState.statChanges.opponent.speed);
+    
+    // 麻痹状态速度减半
+    if (myPokemon.status === 'paralysis') mySpeed *= 0.5;
+    if (opponentPokemon.status === 'paralysis') opponentSpeed *= 0.5;
+    
+    if (mySpeed > opponentSpeed) {
+        return ['my', 'opponent'];
+    } else if (opponentSpeed > mySpeed) {
+        return ['opponent', 'my'];
+    } else {
+        // 速度相同，随机决定
+        return Math.random() < 0.5 ? ['my', 'opponent'] : ['opponent', 'my'];
+    }
+}
+
+// 改进的使用技能函数，考虑出手顺序
+function useMoveWithOrder(moveIndex) {
+    const myPokemon = battleState.myTeam[battleState.currentPokemon.my];
+    const opponentPokemon = battleState.opponentTeam[battleState.currentPokemon.opponent];
+    
+    if (!myPokemon || !opponentPokemon || myPokemon.currentHP <= 0) {
+        addToLog("无法使用技能！");
+        return;
+    }
+    
+    const move = myPokemon.moves[moveIndex];
+    if (!move) {
+        addToLog("无效的技能！");
+        return;
+    }
+    
+    // 决定出手顺序
+    const turnOrder = getTurnOrder();
+    
+    // 执行回合
+    for (const side of turnOrder) {
+        if (side === 'my') {
+            executeMove(myPokemon, opponentPokemon, move, 'my');
+        } else {
+            // 对方AI选择技能
+            const opponentMoveIndex = Math.floor(Math.random() * opponentPokemon.moves.length);
+            const opponentMove = opponentPokemon.moves[opponentMoveIndex];
+            executeMove(opponentPokemon, myPokemon, opponentMove, 'opponent');
+        }
+        
+        // 检查是否有宝可梦倒下
+        if (myPokemon.currentHP <= 0 || opponentPokemon.currentHP <= 0) {
+            break;
+        }
+    }
+    
+    // 应用状态和场地效果
+    applyStatusAndFieldEffects();
+    
+    battleState.turn++;
+    updateUI();
+}
+
+// 执行单个招式
+function executeMove(attacker, defender, move, side) {
+    // 判断是否命中
+    if (!checkHit(move, attacker, defender)) {
+        addToLog(`${attacker.name}使用了${move.name}，但是没有命中！`);
+        return;
+    }
+    
+    // 判断是否暴击
+    const isCritical = checkCriticalHit();
+    
+    // 计算伤害
+    let damage = 0;
+    if (move.power > 0) {
+        damage = calculateDamage(move, attacker, defender, isCritical);
+        defender.currentHP = Math.max(0, defender.currentHP - damage);
+        addToLog(`${attacker.name}使用了${move.name}，对${defender.name}造成了${damage}点伤害！`);
+        
+        if (isCritical) {
+            addToLog("会心一击！");
+        }
+    } else {
+        // 变化招式
+        addToLog(`${attacker.name}使用了${move.name}！`);
+        applyMoveEffect(move, attacker, defender);
+    }
+    
+    // 检查是否有宝可梦倒下
+    if (defender.currentHP <= 0) {
+        addToLog(`${defender.name}倒下了！`);
+        
+        // 确定是哪一方的宝可梦倒下
+        const isDefenderMy = battleState.myTeam.includes(defender);
+        const team = isDefenderMy ? battleState.myTeam : battleState.opponentTeam;
+        
+        if (checkTeamFainted(team)) {
+            const winner = isDefenderMy ? "对方" : "你";
+            addToLog(`${winner}获得了胜利！`);
+            endBattle(!isDefenderMy);
+        }
+    }
+}
+    </script>
+</body>
+</html>
+
